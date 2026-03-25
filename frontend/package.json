@@ -1,0 +1,44 @@
+{
+  "name": "zestfoot-next",
+  "version": "0.1.0",
+  "description": "ZestFoot is a Next.js sneaker e-commerce app with Supabase data, OpenAI chatbot support, and AI try-on features.",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.6.0",
+    "@reduxjs/toolkit": "^2.11.2",
+    "@supabase/supabase-js": "^2.99.2",
+    "aos": "^2.3.4",
+    "axios": "^1.13.6",
+    "lucide-react": "^0.577.0",
+    "mysql2": "^3.22.3",
+    "openai": "^6.34.0",
+    "prop-types": "^15.8.1",
+    "query-string": "^9.3.1",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-markdown": "^10.1.0",
+    "react-redux": "^9.2.0",
+    "replicate": "^1.4.0",
+    "swiper": "^12.1.2",
+    "three": "^0.183.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^6.0.2",
+    "autoprefixer": "^10.4.27",
+    "eslint": "^9",
+    "react-router-dom": "^7.15.1",
+    "typescript": "^5",
+    "vite": "^8.0.13"
+  }
+}
