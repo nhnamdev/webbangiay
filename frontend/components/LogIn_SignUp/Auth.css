@@ -1,0 +1,181 @@
+.auth-wrapper {
+    background-color: #fff;
+    min-height: 80vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+    font-family: 'Roboto', sans-serif;
+}
+
+/* Khung chứa chính (Hộp chữ nhật) */
+.auth-container {
+    display: flex;
+    width: 100%;
+    max-width: 900px;
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    border: 1px solid #eee;
+    overflow: hidden;
+}
+
+/* --- CỘT TRÁI (Thông tin) --- */
+.auth-left {
+    width: 40%;
+    background-color: #f2f2f2;
+    /* Màu xám nhạt nền trái */
+    padding: 3rem 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.auth-title {
+    font-size: 1.8rem;
+    font-weight: 800;
+    /* Chữ đậm */
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    color: #000;
+}
+
+.auth-desc {
+    color: #555;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+}
+
+.auth-image img {
+    width: 100%;
+    border-radius: 8px;
+    display: block;
+}
+
+/* --- CỘT PHẢI (Form) --- */
+.auth-right {
+    width: 60%;
+    padding: 3rem;
+    background-color: #fff;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.form-input {
+    width: 100%;
+    padding: 12px 0;
+    border: none;
+    border-bottom: 1px solid #ddd;
+    /* Chỉ có gạch chân */
+    outline: none;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+}
+
+.form-input:focus {
+    border-bottom: 1px solid #000;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    /* Căn phải nút Quên mật khẩu */
+    margin-bottom: 1.5rem;
+}
+
+.forgot-password {
+    color: #666;
+    font-size: 0.85rem;
+    text-decoration: none;
+}
+
+.auth-btn {
+    width: 100%;
+    padding: 14px;
+    background-color: #8fd659;
+    /* Màu xanh lá giống mẫu */
+    color: #000;
+    /* Chữ đen hoặc trắng tùy mẫu thực tế, mẫu này chữ đen */
+    border: none;
+    border-radius: 30px;
+    /* Bo tròn nút */
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: opacity 0.3s;
+}
+
+.auth-btn:hover {
+    opacity: 0.9;
+}
+
+.auth-switch {
+    margin-top: 1.5rem;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.auth-switch a {
+    color: #000;
+    font-weight: bold;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+/* Responsive cho điện thoại */
+@media (max-width: 768px) {
+    .auth-container {
+        flex-direction: column;
+    }
+
+    .auth-left,
+    .auth-right {
+        width: 100%;
+        padding: 2rem;
+    }
+}
+
+.cancel-btn {
+    width: 100%;
+    padding: 14px;
+    background-color: #ffffff;
+    color: #000;
+    /* Chữ đen */
+    border: 1px solid #000;
+    border-radius: 30px;
+    /* Bo tròn nút */
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: opacity 0.3s;
+}
+
+.cancel-btn:hover {
+    opacity: 0.9;
+}
+
+.btn-container {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    width: 100%;
+}
+
+.btn-container .auth-btn,
+.btn-container .cancel-btn {
+    flex-grow: 1;
+    width: auto;
+    margin-top: 0;
+}
