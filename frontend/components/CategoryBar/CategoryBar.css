@@ -1,0 +1,79 @@
+.category-bar {
+    background-color: #112228;
+    /* Dark color from screenshot */
+    color: white;
+    padding: 10px 0;
+    width: 100%;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+    /* Static/Relative so it scrolls with page */
+    margin-top: 140px;
+    /* Push down below fixed navbar */
+}
+
+.category-bar-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+    overflow-x: auto;
+    /* Allow scroll on small screens */
+    padding: 0 1rem;
+    
+    /* Hide scrollbar for IE, Edge and Firefox */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.category-bar-container::-webkit-scrollbar {
+    display: none;
+}
+
+.category-bar-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: white;
+    gap: 0.5rem;
+    transition: opacity 0.2s;
+    min-width: 80px;
+    /* Ensure clickable area */
+}
+
+.category-bar-item:hover {
+    opacity: 0.8;
+}
+
+.category-bar-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 32px;
+}
+
+.category-bar-icon svg {
+    fill: white;
+}
+
+
+.category-bar-name {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+@media (max-width: 1024px) {
+    .category-bar {
+        margin-top: 90px;
+        /* Adjust for hidden top-bar on mobile */
+    }
+
+    .category-bar-container {
+        gap: 1.5rem;
+        /* Reduce gap on mobile */
+    }
+}
