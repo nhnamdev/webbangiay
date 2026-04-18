@@ -1,0 +1,255 @@
+/* ... existing styles ... */
+.collection-sidebar {
+    width: 250px;
+    flex-shrink: 0;
+    font-family: 'Inter', sans-serif;
+    padding-right: 20px;
+}
+
+.active-facets-mobile {
+    display: none;
+}
+
+.filter-heading-wrapper {
+    margin-bottom: 20px;
+}
+
+.filter-heading {
+    font-family: 'Oswald', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+}
+
+.clear-all {
+    font-size: 0.9rem;
+    color: #666;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.clear-all:hover {
+    color: #e50019;
+}
+
+/* Accordion Item */
+.filter-item {
+    border-bottom: 1px solid #ebebeb;
+    padding: 15px 0;
+}
+
+.filter-item:first-child {
+    border-top: none;
+}
+
+.filter-summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    font-family: 'Oswald', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    user-select: none;
+}
+
+.filter-icon {
+    transition: transform 0.3s ease;
+}
+
+.filter-icon.open {
+    transform: rotate(180deg);
+}
+
+.filter-content {
+    margin-top: 15px;
+    display: none;
+}
+
+.filter-content.open {
+    display: block;
+}
+
+/* Switch Type */
+.switch-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.switch-input {
+    appearance: none;
+    width: 40px;
+    height: 20px;
+    background: #ccc;
+    border-radius: 20px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.switch-input::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    background: white;
+    border-radius: 50%;
+    transition: left 0.3s;
+}
+
+.switch-input:checked {
+    background: #333;
+}
+
+.switch-input:checked::after {
+    left: 22px;
+}
+
+/* Checkbox Lists */
+.filter-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.filter-list-item {
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.95rem;
+    color: #333;
+    cursor: pointer;
+    flex: 1;
+    user-select: none;
+}
+
+.custom-checkbox {
+    width: 18px;
+    height: 18px;
+    border: 1px solid #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    flex-shrink: 0;
+    transition: all 0.2s;
+}
+
+.checkbox-count {
+    color: #999;
+    font-size: 0.8rem;
+    background: #f5f5f5;
+    padding: 2px 6px;
+    border-radius: 10px;
+}
+
+/* Price Range */
+.price-range-wrapper {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.price-field {
+    flex: 1;
+    position: relative;
+}
+
+.price-field label {
+    position: absolute;
+    top: -8px;
+    left: 10px;
+    background: white;
+    padding: 0 4px;
+    font-size: 0.75rem;
+    color: #666;
+}
+
+.price-field input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    outline: none;
+}
+
+/* Color Swatches */
+.swatch-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.swatch-item {
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: calc(100% / 4 - 10px);
+    /* Approx 4 per row */
+}
+
+.swatch-circle {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1px solid #ddd;
+    margin-bottom: 5px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s;
+}
+
+.swatch-item:hover .swatch-circle {
+    transform: scale(1.05);
+}
+
+.swatch-item.selected .swatch-circle {
+    border: 2px solid #333 !important;
+    transform: scale(1.1);
+}
+
+.swatch-check-icon {
+    color: white;
+    /* Create text shadow or background for check icon if color is light? 
+       Actually standard design often uses inverted check color or simply check.
+       For light colors (white, cream), white icon is invisible. 
+       Let's stick to simple CSS filter or specific color logic in JS or just mix-blend-mode */
+    filter: drop-shadow(0px 0px 1px rgba(0, 0, 0, 0.5));
+}
+
+.swatch-label {
+    font-size: 0.75rem;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .collection-sidebar {
+        width: 100%;
+        margin-bottom: 20px;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 20px;
+    }
+}
