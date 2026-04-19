@@ -1,0 +1,241 @@
+.hero-section {
+    width: 100%;
+    min-height: 400px;
+    background-color: #eee;
+    background-image: url('https://abc-mart.com.vn/images/banners/banner_slider_1.jpg');
+    /* Placeholder */
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    /* margin-top moved to CategoryBar */
+}
+
+@media (max-width: 768px) {
+    .hero-section {
+        min-height: 250px;
+    }
+
+    .banner-content h1 {
+        font-size: 2rem;
+    }
+
+    .banner-content p {
+        font-size: 1rem;
+        margin-bottom: 1rem;
+    }
+}
+
+.hero-banner {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.banner-content {
+    text-align: center;
+    color: white;
+}
+
+.banner-content h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+}
+
+.banner-content p {
+    font-size: 1.25rem;
+    margin-bottom: 2rem;
+}
+
+.section-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 3rem 1rem;
+}
+
+@media (max-width: 768px) {
+    .section-container {
+        padding: 1.5rem 1rem;
+    }
+}
+
+
+.section-container.bg-light {
+    background-color: #f9f9f9;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.section-title {
+    font-family: 'Oswald', sans-serif !important;
+    font-size: 2rem !important;
+    font-weight: 600 !important;
+    text-align: left !important;
+    margin-bottom: 0 !important;
+    position: relative;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    line-height: 1 !important;
+}
+
+.section-title::after {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 3px;
+    background-color: #333;
+    margin: 0.5rem 0 0;
+}
+
+.section-title.text-red {
+    color: #e50019;
+}
+
+.section-title.text-red::after {
+    background-color: #e50019;
+}
+
+/* Brand Grid */
+.brand-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 1.5rem;
+    align-items: center;
+}
+
+.brand-card {
+    background: white;
+    border: 1px solid #eee;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 80px;
+    transition: transform 0.2s;
+}
+
+.brand-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.brand-card img {
+    max-width: 100%;
+    max-height: 100%;
+    filter: grayscale(100%);
+    opacity: 0.7;
+    transition: all 0.2s;
+}
+
+.brand-card:hover img {
+    filter: grayscale(0%);
+    opacity: 1;
+}
+
+/* ProductCard Grid */
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+}
+
+.btn-outline {
+    background: transparent;
+    border: 2px solid #333;
+    padding: 0.5rem 1.5rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-top: 1rem;
+    color: #333;
+}
+
+.btn-outline:hover {
+    background-color: #333;
+    color: white;
+}
+
+.mt-4 {
+    margin-top: 1rem;
+}
+
+.text-center {
+    text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .brand-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .product-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .brand-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+    }
+
+    .product-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+    }
+
+    .section-title {
+        font-size: 1.5rem !important;
+    }
+
+    .banner-content h1 {
+        font-size: 2rem;
+    }
+}
+
+/* Loading Screen */
+.loading-screen {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 2000;
+}
+
+.spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #e50019;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
