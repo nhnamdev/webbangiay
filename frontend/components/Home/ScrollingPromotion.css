@@ -1,0 +1,109 @@
+/* ScrollingPromotion.css */
+
+.scrolling-promotion-section {
+    width: 100%;
+    overflow: hidden;
+    background-color: #8FD45B;
+    /* Green color matching the uploaded image */
+    padding: 17px 0;
+}
+
+@media screen and (min-width: 992px) {
+    .scrolling-promotion-section {
+        padding: 34px 0;
+    }
+}
+
+.scrolling-promotion-container {
+    width: 100%;
+}
+
+.marquee {
+    display: flex;
+    overflow: hidden;
+    user-select: none;
+    width: 100%;
+}
+
+.marquee_inner-promotion {
+    display: flex;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+}
+
+.marquee_sub-promotion {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    will-change: transform;
+}
+
+.right_left {
+    animation: translateRight 30s linear infinite;
+}
+
+@keyframes translateRight {
+    from {
+        transform: translateX(0%);
+    }
+
+    to {
+        transform: translateX(-100%);
+    }
+}
+
+/* Pause on Hover */
+.marquee:hover .marquee_sub-promotion {
+    animation-play-state: paused !important;
+    cursor: pointer;
+}
+
+.marquee__inner-promotion.marquee-child {
+    margin: 0 45px;
+    gap: 15px;
+    display: flex;
+    align-items: center;
+}
+
+@media screen and (min-width: 992px) {
+    .marquee__inner-promotion.marquee-child {
+        margin: 0 90px;
+    }
+}
+
+.evenodd_outline {
+    font-size: 24px;
+    margin: 0;
+    font-weight: 700;
+    text-transform: none;
+    /* User code didn't force uppercase */
+    white-space: nowrap;
+    font-family: 'Oswald', sans-serif;
+    /* Keep font consistent */
+}
+
+@media screen and (min-width: 992px) {
+    .evenodd_outline {
+        font-size: 32px;
+    }
+}
+
+/* Even/Odd coloring logic based on the image */
+/* It seems from the image: Dark Blue/Navy text on Green background */
+/* But the user code had .even-word and .odd-word classes. */
+/* Based on provided HTML: <span class="even-word">Thật</span> ... */
+/* Let's default to a dark color for visibility on green, or follow provided CSS if any. */
+/* User CSS provided:
+    .text--text_dp3WXP p, .text--text_dp3WXP p .even-word { font-weight: 700 }
+*/
+/* The image shows solid dark text. */
+
+.even-word,
+.odd-word {
+    color: #001f3f;
+    /* Dark Navy Blue to contrast with Green */
+    font-weight: 700;
+}
+
+/* If the user wants specific alternation like outlined text, we can add it, 
+   but the image shows solid text. I'll stick to solid for now. */
