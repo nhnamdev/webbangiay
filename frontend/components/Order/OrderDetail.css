@@ -1,0 +1,532 @@
+/* Shopee Style Order Detail */
+.shopee-order-detail {
+    background-color: #f5f5f5;
+    min-height: 100vh;
+    padding-bottom: 50px;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+.shopee-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px 10px;
+}
+
+.shopee-header-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+    padding: 15px 20px;
+    margin-bottom: 2px;
+    border-radius: 2px;
+    box-shadow: 0 1px 1px 0 rgba(0, 0, 0, .05);
+}
+
+.shopee-back-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    color: #555;
+    text-transform: uppercase;
+    font-weight: 500;
+}
+
+.shopee-back-btn:hover {
+    color: var(--primary-red);
+}
+
+.shopee-order-meta {
+    font-size: 14px;
+    color: #222;
+}
+
+.shopee-order-meta .divider {
+    margin: 0 10px;
+    color: #ccc;
+}
+
+.shopee-status-text {
+    color: var(--primary-red);
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+/* Timeline/Stepper */
+.shopee-stepper-card {
+    background: #fff;
+    padding: 40px 20px;
+    margin-bottom: 20px;
+    border-radius: 2px;
+    box-shadow: 0 1px 1px 0 rgba(0, 0, 0, .05);
+}
+
+.stepper-wrapper {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.stepper-wrapper::before {
+    content: '';
+    position: absolute;
+    top: 25px;
+    left: 40px;
+    right: 40px;
+    height: 4px;
+    background: #e0e0e0;
+    z-index: 0;
+}
+
+.stepper-item {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+}
+
+.step-counter {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: #fff;
+    border: 4px solid #e0e0e0;
+    color: #ccc;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 10px;
+    transition: all 0.3s;
+}
+
+.step-name {
+    font-size: 14px;
+    color: #999;
+    font-weight: 400;
+}
+
+.step-time {
+    font-size: 12px;
+    color: #999;
+    margin-top: 5px;
+    text-align: center;
+    width: 120px;
+}
+
+.stepper-item.completed .step-counter {
+    border-color: var(--primary-red);
+    background: var(--primary-red);
+    color: #fff;
+}
+
+.stepper-item.completed .step-name {
+    color: #222;
+}
+
+/* Address & Logistics Group */
+.shopee-info-group {
+    background: #fff;
+    display: flex;
+    margin-bottom: 20px;
+    border-radius: 2px;
+    box-shadow: 0 1px 1px 0 rgba(0, 0, 0, .05);
+    background-image: repeating-linear-gradient(45deg, var(--primary-red) 0px, var(--primary-red) 30px, transparent 30px, transparent 60px, #333 60px, #333 90px, transparent 90px, transparent 120px);
+    background-size: 100% 3px;
+    background-repeat: no-repeat;
+    background-position: top left;
+    padding-top: 3px;
+}
+
+.info-col {
+    flex: 1;
+    padding: 25px 30px;
+}
+
+.logistics-col {
+    border-left: 1px solid #f5f5f5;
+}
+
+.col-header h3 {
+    font-size: 20px;
+    font-weight: 500;
+    color: #222;
+    margin-bottom: 15px;
+}
+
+/* Address Body */
+.addr-name {
+    font-size: 16px;
+    font-weight: 500;
+    color: #000;
+    margin-bottom: 5px;
+}
+
+.addr-phone {
+    font-size: 14px;
+    color: #777;
+    margin-bottom: 5px;
+}
+
+.addr-text {
+    font-size: 14px;
+    color: #555;
+}
+
+.addr-sub {
+    font-size: 14px;
+    color: #777;
+}
+
+/* Vertical Logistics Timeline */
+.logistics-timeline {
+    position: relative;
+    padding-left: 10px;
+}
+
+.timeline-item {
+    position: relative;
+    padding-left: 20px;
+    padding-bottom: 20px;
+    border-left: 2px solid #e0e0e0;
+}
+
+.timeline-item:last-child {
+    border-left: 2px solid transparent;
+}
+
+.timeline-item.latest .tl-dot {
+    background: var(--primary-red);
+    border-color: var(--primary-red);
+}
+
+.timeline-item.latest .tl-status {
+    color: var(--primary-red);
+}
+
+.tl-dot {
+    position: absolute;
+    left: -6px;
+    top: 0;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #e0e0e0;
+    border: 2px solid #fff;
+}
+
+.tl-time {
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 2px;
+}
+
+.tl-status {
+    font-size: 14px;
+    color: #222;
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+.tl-desc {
+    font-size: 13px;
+    color: #555;
+    line-height: 1.4;
+}
+
+.success-text {
+    color: #26aa99 !important;
+}
+
+.no-tracking {
+    color: #999;
+    font-style: italic;
+}
+
+/* Product Card */
+.shopee-product-card {
+    background: #fff;
+    border-radius: 2px;
+    box-shadow: 0 1px 1px 0 rgba(0, 0, 0, .05);
+    margin-bottom: 1px;
+    padding: 0 20px;
+}
+
+.shop-header {
+    display: flex;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid #f5f5f5;
+}
+
+.shop-badge {
+    background: var(--primary-red);
+    color: #fff;
+    font-size: 12px;
+    padding: 1px 4px;
+    border-radius: 2px;
+    margin-right: 8px;
+}
+
+.shop-name {
+    font-weight: 500;
+    color: #222;
+    margin-right: 15px;
+}
+
+.shop-btn-action {
+    border: 1px solid #e8e8e8;
+    background: #fff;
+    padding: 4px 10px;
+    margin-right: 8px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: #555;
+    cursor: pointer;
+}
+
+.order-product-item {
+    display: flex;
+    padding: 20px 0;
+    border-bottom: 1px solid #f5f5f5;
+}
+
+.p-img-wrapper {
+    width: 80px;
+    height: 80px;
+    border: 1px solid #e8e8e8;
+    margin-right: 15px;
+}
+
+.p-img-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.p-info {
+    flex: 1;
+}
+
+.p-name {
+    font-size: 16px;
+    color: #222;
+    margin-bottom: 5px;
+    line-height: 20px;
+}
+
+.p-variant {
+    font-size: 14px;
+    color: #999;
+    margin-bottom: 5px;
+}
+
+.p-qty {
+    font-size: 14px;
+    color: #222;
+}
+
+.p-price {
+    text-align: right;
+    width: 150px;
+}
+
+.old-price {
+    display: block;
+    text-decoration: line-through;
+    color: #999;
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+
+.curr-price {
+    display: block;
+    color: var(--primary-red);
+    font-size: 16px;
+}
+
+/* Summary Section */
+.shopee-summary-section {
+    background: #fff;
+    border-top: 1px solid #f1f0f0;
+    padding: 20px 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+    max-width: 400px;
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: #777;
+}
+
+.s-label {
+    flex: 1;
+    text-align: right;
+    padding-right: 20px;
+}
+
+.s-value {
+    width: 150px;
+    text-align: right;
+    color: #333;
+}
+
+.s-value.discount {
+    color: var(--primary-red);
+}
+
+.s-value.big-total {
+    font-size: 24px;
+    color: var(--primary-red);
+    font-weight: 500;
+}
+
+/* Footer Actions */
+.shopee-footer-actions {
+    background: #fff;
+    padding: 20px 30px;
+    display: flex;
+    justify-content: flex-end;
+    border-top: 1px dotted #e8e8e8;
+}
+
+.shopee-btn {
+    min-width: 150px;
+    height: 40px;
+    padding: 0 20px;
+    border-radius: 2px;
+    font-size: 14px;
+    cursor: pointer;
+    text-transform: capitalize;
+}
+
+.shopee-btn.buy-again {
+    background: var(--primary-red);
+    color: #fff;
+    border: 1px solid var(--primary-red);
+}
+
+.shopee-btn.cancel {
+    background: #fff;
+    color: #555;
+    border: 1px solid #dbdbdb;
+}
+
+.shopee-btn.cancel:hover {
+    background: #f8f8f8;
+}
+
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: #fff;
+    padding: 24px;
+    border-radius: 4px;
+    width: 400px;
+}
+
+.cancel-reasons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.reason-option {
+    display: flex;
+    gap: 10px;
+    cursor: pointer;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.modal-btn {
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    border: none;
+}
+
+.modal-btn.secondary {
+    background: #eee;
+}
+
+.modal-btn.primary {
+    background: var(--primary-red);
+    color: #fff;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .shopee-info-group {
+        flex-direction: column;
+    }
+
+    .logistics-col {
+        border-left: none;
+        border-top: 1px solid #eee;
+    }
+
+    .stepper-wrapper {
+        flex-direction: column;
+        align-items: flex-start;
+        padding-left: 20px;
+    }
+
+    .stepper-wrapper::before {
+        left: 44px;
+        top: 20px;
+        width: 4px;
+        height: 100%;
+        background: #e0e0e0;
+    }
+
+    .stepper-item {
+        flex-direction: row;
+        align-items: center;
+        margin-bottom: 20px;
+        width: 100%;
+    }
+
+    .step-counter {
+        margin-right: 15px;
+        margin-bottom: 0;
+    }
+
+    .step-time {
+        text-align: left;
+        margin-left: 10px;
+        margin-top: 0;
+    }
+}
