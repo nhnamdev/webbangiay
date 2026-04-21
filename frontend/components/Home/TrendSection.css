@@ -1,0 +1,41 @@
+.trend-section {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+
+
+.collection__view-all .link {
+    font-size: 1.1rem;
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px solid currentColor;
+    padding-bottom: 2px;
+}
+
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    padding: 0;
+    list-style: none;
+    margin: 0;
+}
+
+@media (min-width: 768px) {
+    .product-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (min-width: 990px) {
+    .product-grid.grid--5-col-desktop {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}
+
+.grid__item {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
