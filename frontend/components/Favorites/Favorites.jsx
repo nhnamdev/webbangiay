@@ -168,3 +168,5 @@ const Favorites = () => {
 };
 
 export default Favorites;
+
+// fix bug them bot san pham yeu thich
