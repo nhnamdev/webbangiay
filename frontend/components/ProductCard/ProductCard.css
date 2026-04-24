@@ -1,0 +1,152 @@
+/* Badge Styles */
+.badge {
+    padding: 2px 8px;
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+/* If using a container for badges */
+.badge-container {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    z-index: 5;
+    max-width: 80%;
+}
+
+.badge.new {
+    background-color: #4de525;
+    color: #000;
+}
+
+.badge.sale {
+    background-color: #e50019;
+}
+
+.badge.exclusive {
+    background: linear-gradient(90deg, #E8E8E8 0%, #A4A4A4 100%);
+    color: #000;
+}
+
+.badge.limited {
+    background: linear-gradient(95.1deg, #B98F2F 0%, #FDF195 49.76%, #D5B246 100%);
+    color: #000;
+}
+
+/* Product Card Layout */
+.product-card {
+    border: 1px solid #eee;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: box-shadow 0.3s ease;
+    background: white;
+    height: 100%;
+    /* For swiper */
+    display: flex;
+    flex-direction: column;
+    text-decoration: none !important;
+    /* Force remove underline */
+    color: inherit;
+}
+
+.product-card:hover {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    text-decoration: none !important;
+    /* Force remove underline */
+    color: inherit;
+}
+
+.product-image-container {
+    position: relative;
+    width: 100%;
+    padding-top: 100%;
+    /* Square aspect ratio */
+    overflow: hidden;
+    background: #ffffff;
+    /* Fill empty space */
+}
+
+.product-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    /* Contain to see full shoe */
+    transition: transform 0.3s ease;
+    padding: 10px;
+    /* Padding for shoe */
+}
+
+.product-card:hover .product-image {
+    transform: scale(1.05);
+}
+
+/* Overlay Frame */
+
+
+.product-info {
+    padding: 1rem;
+    text-align: center;
+    /* Center align text */
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    /* Push content apart */
+}
+
+.product-brand {
+    font-size: 0.55rem;
+    color: #b0b0b0;
+    opacity: 0.6;
+    font-weight: 300;
+    margin-bottom: 0.2rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-decoration: none !important;
+}
+
+.product-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    height: 44px;
+    /* Fixed 2 lines height (1rem * 1.4 * 2 approx 44px) */
+    color: #000;
+    /* Ensure name is distinct */
+    text-decoration: none !important;
+    /* Ensure no underline on name either */
+}
+
+.product-price {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #000;
+    text-decoration: none !important;
+}
+
+.price-current {
+    font-size: 1rem;
+    text-decoration: none !important;
+}
+
+.price-old {
+    font-size: 0.85rem;
+    color: #999;
+    text-decoration: line-through;
+    margin-left: 8px;
+}
