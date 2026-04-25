@@ -1,0 +1,55 @@
+.product-carousel-section {
+    padding: 2rem 1rem;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.section-title.text-left {
+    text-align: left;
+    margin-bottom: 0;
+    font-family: 'Oswald', sans-serif;
+    font-size: 2rem;
+    /* Larger size */
+    font-weight: 600;
+    letter-spacing: 1px;
+    /* Slightly condensed/spaced */
+    text-transform: uppercase;
+    line-height: 1;
+}
+
+.section-title.text-left::after {
+    margin: 0.5rem 0 0;
+    /* Align underline to left */
+}
+
+.view-all-link {
+    font-size: 1rem;
+    color: #333;
+    text-decoration: underline;
+    font-weight: 500;
+}
+
+.product-swiper {
+    padding-bottom: 2rem;
+}
+
+.product-swiper .swiper-button-next,
+.product-swiper .swiper-button-prev {
+    color: #333;
+    background: rgba(255, 255, 255, 0.8);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.product-swiper .swiper-button-next::after,
+.product-swiper .swiper-button-prev::after {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
