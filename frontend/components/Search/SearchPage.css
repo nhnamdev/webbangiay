@@ -1,0 +1,20 @@
+/* Reuse Collection Page Styles */
+@import '../Collection/CollectionPage.css';
+
+.search-page {
+    padding-bottom: 50px;
+}
+
+.search-header {
+    text-align: center;
+    padding: 40px 20px;
+    background-color: #f8f9fa;
+    margin-bottom: 30px;
+}
+
+.search-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+}
