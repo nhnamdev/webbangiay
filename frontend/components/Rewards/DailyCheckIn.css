@@ -1,0 +1,128 @@
+.daily-checkin-container {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.checkin-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.checkin-header svg {
+    color: #4CAF50;
+}
+
+.days-strip {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 25px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+}
+
+.day-box {
+    flex: 1;
+    min-width: 90px;
+    height: 100px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    background: white;
+    transition: all 0.2s;
+}
+
+/* Past Days (Checked) */
+.day-box.checked {
+    background: #E8F5E9;
+    border-color: #81C784;
+    color: #2E7D32;
+}
+
+/* Today (Active) */
+.day-box.today {
+    background: #5DAD1F;
+    border-color: #5DAD1F;
+    color: white;
+    transform: scale(1.0);
+    box-shadow: 0 4px 12px rgba(93, 173, 31, 0.3);
+    z-index: 1;
+    border-radius: 8px;
+    /* Force rounded corners */
+}
+
+/* Future Days */
+.day-box.future {
+    background: white;
+    border-color: #eee;
+    color: #999;
+}
+
+.day-box.day-7 {
+    border-color: #FFEB3B;
+    background: #FFFDE7;
+    flex: 1;
+}
+
+.day-box.day-7 .points {
+    color: #FBC02D;
+    font-weight: 800;
+}
+
+.check-icon {
+    font-size: 1.5rem;
+    margin-bottom: 5px;
+}
+
+.points {
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 5px;
+}
+
+.day-box.today .points {
+    color: white;
+}
+
+.day-label {
+    font-size: 0.8rem;
+}
+
+.checkin-btn-container {
+    display: flex;
+    justify-content: center;
+}
+
+.checkin-btn {
+    background: #222;
+    color: white;
+    border: none;
+    padding: 12px 40px;
+    font-size: 1rem;
+    font-weight: 700;
+    border-radius: 6px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: background 0.2s;
+}
+
+.checkin-btn:hover {
+    background: #444;
+}
+
+.checkin-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
