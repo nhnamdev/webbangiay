@@ -1,0 +1,163 @@
+.lucky-wheel-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.lucky-wheel-container {
+    background: #2a2a2a;
+    padding: 20px;
+    border-radius: 16px;
+    text-align: center;
+    position: relative;
+    max-width: 90%;
+    width: 400px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    color: white;
+    /* Added text color */
+}
+
+.lucky-wheel-container h3 {
+    margin-top: 0;
+    font-size: 1.5rem;
+    color: #4ade80;
+    /* Match other games header */
+    margin-bottom: 10px;
+}
+
+.lucky-wheel-container p {
+    color: #ddd;
+    margin-bottom: 20px;
+}
+
+.close-btn-wheel {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #aaa;
+    /* Match close btn color */
+    transition: color 0.2s;
+}
+
+.close-btn-wheel:hover {
+    color: white;
+}
+
+.wheel-wrapper {
+    position: relative;
+    width: 300px;
+    height: 300px;
+    margin: 20px auto;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 5px solid #ffffff;
+    /* Ease out custom */
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+}
+
+.wheel-section {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    clip-path: polygon(50% 50%, 50% 0, 100% 0, 100% 30%);
+    /* Simplified wedge - approximated */
+    /* Only works for specific number of segments, implementing with conic-gradient might be easier for dynamic */
+    transform-origin: 50% 50%;
+}
+
+/* Using Conic Gradient for the Wheel Board */
+.wheel-board {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: conic-gradient(#FF5252 0% 16.66%,
+            #FFC107 16.66% 33.33%,
+            #4CAF50 33.33% 50%,
+            #2196F3 50% 66.66%,
+            #9C27B0 66.66% 83.33%,
+            #FF9800 83.33% 100%);
+    position: relative;
+    transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+    /* Move transition here */
+}
+
+.wheel-pointer {
+    position: absolute;
+    top: 0px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-10px);
+    width: 0;
+    height: 0;
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-top: 30px solid #ffffff;
+    z-index: 10;
+}
+
+.spin-btn {
+    background: #FF5252;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 50px;
+    font-weight: bold;
+    font-size: 1.1rem;
+    cursor: pointer;
+    margin-top: 20px;
+    box-shadow: 0 4px 0 #D32F2F;
+    transition: all 0.1s;
+}
+
+.spin-btn:active {
+    transform: translateY(4px);
+    box-shadow: none;
+}
+
+.spin-btn:disabled {
+    background: #ccc;
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+.wheel-labels {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.wheel-label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    height: 20px;
+    margin-top: -10px;
+    /* Center vertically */
+    transform-origin: 0 50%;
+    /* Pivot at start(center of wheel), vertically centered */
+    font-size: 12px;
+    font-weight: bold;
+    color: white;
+    text-shadow: 1px 1px 2px black;
+    width: 140px;
+    text-align: right;
+    padding-right: 30px;
+    line-height: 20px;
+    /* Vertical centering text */
+    pointer-events: none;
+    font-size: 11px;
+    /* Slightly smaller for better fit */
+}
