@@ -1,0 +1,64 @@
+.match-game-modal {
+    width: 750px !important;
+    max-width: 95vw;
+}
+
+.match-board {
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    background: #2a2a2a;
+    border-radius: 8px;
+    gap: 5px;
+    position: relative;
+    min-height: 400px;
+    justify-content: center;
+}
+
+.match-row {
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+}
+
+.match-tile {
+    width: 60px;
+    height: 60px;
+    background: #fff;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+}
+
+.match-tile img {
+    width: 90%;
+    height: 90%;
+    object-fit: contain;
+}
+
+.match-tile.selected {
+    border-color: #ffd700;
+    box-shadow: 0 0 10px #ffd700;
+    transform: scale(1.05);
+}
+
+.match-tile.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.timer-box {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: #ff4757;
+    font-weight: bold;
+    font-size: 1.1rem;
+    background: #222;
+    padding: 5px 10px;
+    border-radius: 15px;
+}
