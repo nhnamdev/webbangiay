@@ -1,0 +1,45 @@
+#snake-board {
+    display: grid;
+    background-color: #111;
+    border: 2px solid #444;
+    position: relative;
+    /* Fix overlay covering close button */
+}
+
+.cell {
+    width: 20px;
+    height: 20px;
+    box-sizing: border-box;
+}
+
+.cell.snake {
+    background-color: #3b82f6;
+    /* DodgerBlue like original */
+    border-radius: 2px;
+    box-shadow: 0 0 5px #3b82f6;
+}
+
+.cell.food {
+    background-color: #ef4444;
+    /* Red */
+    border-radius: 50%;
+    box-shadow: 0 0 5px #ef4444;
+    animation: pulse 1s infinite alternate;
+}
+
+.cell.wall {
+    background-color: #6b7280;
+    /* Gray */
+    border-radius: 4px;
+    border: 1px solid #4b5563;
+}
+
+@keyframes pulse {
+    from {
+        transform: scale(0.8);
+    }
+
+    to {
+        transform: scale(1.1);
+    }
+}
