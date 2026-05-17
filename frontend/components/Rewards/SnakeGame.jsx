@@ -519,3 +519,5 @@ const SnakeGame = ({ onClose }) => {
 };
 
 export default SnakeGame;
+
+// giam toc do ran cho de choi hon
