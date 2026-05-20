@@ -431,3 +431,5 @@ const TetrisGame = ({ onClose }) => {
 };
 
 export default TetrisGame;
+
+// fix loi va cham khoi gach tetris
