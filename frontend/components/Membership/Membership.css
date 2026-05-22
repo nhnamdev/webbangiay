@@ -1,0 +1,940 @@
+.membership-container {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 1002;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.membership-toggle {
+    width: 60px;
+    height: 60px;
+    background-color: #1a1a1a;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease;
+}
+
+.membership-toggle:hover {
+    transform: scale(1.05);
+}
+
+.membership-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-end;
+    padding: 20px;
+    z-index: 2000;
+}
+
+.membership-modal {
+    width: 380px;
+    max-height: 80vh;
+    background-color: #F5F5F5;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    animation: slideUpFade 0.3s ease-out;
+    margin-bottom: 70px;
+}
+
+@keyframes slideUpFade {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.membership-header {
+    background: linear-gradient(180deg, #333333 0%, #1a1a1a 100%);
+    color: white;
+    padding: 25px 20px;
+    position: relative;
+    text-align: left;
+}
+
+.header-content h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    opacity: 0.7;
+}
+
+.close-btn:hover {
+    opacity: 1;
+}
+
+.membership-body {
+    padding: 15px;
+    overflow-y: auto;
+}
+
+/* Icon Vé (Ticket) */
+.ticket-icon-large {
+    margin-bottom: 10px;
+}
+
+.redeem-logo-img {
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+}
+
+/* Typography trang đổi điểm */
+.redeem-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: #1a1a1a;
+    margin: 5px 0 5px;
+    text-transform: uppercase;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.activation-points {
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 25px;
+    font-weight: 500;
+}
+
+/* Nút Đổi Quà (Màu đen đậm như hình 2) */
+.primary-btn.dark {
+    background-color: #1a1a1a;
+    /* Hardcoded since var was removed */
+    color: white;
+    width: 100%;
+    padding: 16px;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 700;
+    text-transform: uppercase;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s;
+    margin-bottom: 15px;
+}
+
+.primary-btn.dark:hover {
+    background-color: #000;
+}
+
+.membership-card {
+    background-color: white;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.clickable-card {
+    cursor: pointer;
+    padding: 15px 20px;
+    /* Reduced padding for header-only look when collapsed */
+    transition: background-color 0.2s;
+}
+
+.clickable-card:hover {
+    background-color: #fafafa;
+}
+
+.main-card {
+    text-align: center;
+}
+
+.main-card h4 {
+    margin: 0 0 10px 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: #333;
+    text-transform: uppercase;
+}
+
+.main-card p {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.join-btn {
+    background-color: #212121;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+.login-text {
+    font-size: 13px;
+    color: #666;
+}
+
+.login-text a {
+    color: #333;
+    font-weight: 600;
+    text-decoration: underline;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* Center items vertically */
+}
+
+.card-header h4 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    color: #212121;
+}
+
+.subtitle-text {
+    font-size: 13px;
+    color: #666;
+    margin: 4px 0 0 0;
+}
+
+.arrow-icon {
+    transition: transform 0.3s ease;
+    display: flex;
+    align-items: center;
+}
+
+.arrow-icon.expanded {
+    transform: rotate(180deg);
+}
+
+.card-content {
+    margin-top: 15px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 15px;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.reward-item,
+.refer-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.icon-box {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.icon-box.orange {
+    background-color: #FFF3E0;
+}
+
+.icon-box.blue {
+    background-color: #E3F2FD;
+}
+
+.icon-box.purple {
+    background-color: #F3E5F5;
+}
+
+.icon {
+    font-size: 18px;
+}
+
+.reward-info h5,
+.refer-info h5 {
+    margin: 0 0 4px 0;
+    font-size: 14px;
+    color: #333;
+    font-weight: 600;
+}
+
+.reward-info p,
+.refer-info p {
+    margin: 0;
+    font-size: 12px;
+    color: #666;
+}
+
+.refer-desc {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 15px;
+    line-height: 1.4;
+}
+
+.refer-rewards {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Custom Scrollbar */
+.membership-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.membership-body::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.membership-body::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 3px;
+}
+
+/* --- New Styles for Redesign --- */
+
+/* Text Colors */
+.membership-header h4 {
+    color: #333;
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.membership-header .points-label {
+    color: #666;
+    font-size: 13px;
+    margin: 10px 0 5px 0;
+}
+
+.membership-header .username {
+    color: #333;
+    font-weight: 700;
+    font-size: 14px;
+    margin-top: 15px;
+    text-transform: uppercase;
+}
+
+/* Main Header (White) */
+.membership-header.main-header {
+    background: white;
+    color: #333;
+    padding: 25px 20px;
+    text-align: left;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.membership-header.main-header .close-btn {
+    color: #333;
+    top: 20px;
+    right: 20px;
+}
+
+/* Sub Header (Dark) */
+.membership-header.sub-header {
+    background: #1a1a1a;
+    /* Dark background for sub-pages per design */
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0px 10px 0 10px;
+}
+
+.membership-header.sub-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    flex-grow: 1;
+    text-align: center;
+}
+
+.membership-header.sub-header .close-btn {
+    position: static;
+    color: white;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.back-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 15px;
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+    margin-top: 24px;
+}
+
+.back-btn:hover {
+    opacity: 1;
+}
+
+/* Points Display */
+.points-display {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+}
+
+.points-display h1 {
+    font-size: 48px;
+    font-weight: 700;
+    color: #212121;
+    margin: 0;
+    line-height: 1;
+}
+
+.points-display span {
+    font-size: 14px;
+    font-weight: 600;
+    color: #666;
+    text-transform: uppercase;
+}
+
+/* History Link */
+.history-link {
+    text-align: center;
+    font-size: 13px;
+    color: #666;
+    text-decoration: underline;
+    cursor: pointer;
+    margin-top: 10px;
+    padding-bottom: 20px;
+}
+
+/* VIEW CONTENT STYLES */
+.view-content {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    min-height: 300px;
+}
+
+.view-content.center-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding-top: 40px;
+}
+
+/* Icons Large */
+.icon-box.large {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 20px;
+}
+
+.icon-box.large .icon {
+    font-size: 32px;
+}
+
+/* Referral View */
+.heart-icon-large {
+    font-size: 60px;
+    margin-bottom: 20px;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+}
+
+.refer-desc-large {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 20px;
+    line-height: 1.5;
+    max-width: 90%;
+}
+
+.referral-link-box {
+    background: #f5f5f5;
+    padding: 12px;
+    border-radius: 6px;
+    font-family: monospace;
+    font-size: 12px;
+    color: #333;
+    width: 100%;
+    word-break: break-all;
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+}
+
+.primary-btn {
+    background: #212121;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.2s;
+    width: 100%;
+}
+
+.primary-btn:active {
+    transform: scale(0.98);
+}
+
+.refer-status {
+    margin-top: 20px;
+    font-size: 12px;
+    color: #999;
+}
+
+/* Redeem View */
+.coupon-icon-large {
+    margin-bottom: 10px;
+}
+
+.points-req {
+    color: #666;
+    margin-bottom: 30px;
+}
+
+.redeem-detail-text {
+    margin-top: 15px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.redeem-terms {
+    margin-top: 20px;
+    text-align: left;
+    width: 100%;
+    border-top: 1px solid #eee;
+    padding-top: 15px;
+}
+
+.redeem-terms-container p {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 10px;
+}
+
+.redeem-subtitle {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+/* History View */
+.history-summary-card {
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.history-summary-card p {
+    margin: 0;
+    font-size: 13px;
+    color: #666;
+}
+
+.history-summary-card h2 {
+    margin: 5px 0 0 0;
+    font-size: 24px;
+    color: #333;
+}
+
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.history-item {
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 15px;
+    position: relative;
+}
+
+.history-time {
+    font-size: 11px;
+    color: #999;
+    margin-bottom: 5px;
+}
+
+.history-reason {
+    font-size: 14px;
+    color: #333;
+    font-weight: 500;
+    padding-right: 80px;
+    /* Space for amount */
+}
+
+.history-amount {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.history-amount.positive {
+    color: #4CAF50;
+}
+
+.history-amount.negative {
+    color: #F44336;
+}
+
+/* Coupon Success View */
+.coupon-box {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px 15px;
+    width: 100%;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: monospace;
+    font-size: 16px;
+    color: #333;
+}
+
+.copy-icon {
+    font-size: 16px;
+    color: #999;
+    cursor: pointer;
+}
+
+.copy-icon:hover {
+    color: #333;
+}
+
+/* Grid Layout for Reward/Coupon Cards */
+.membership-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.grid-item {
+    padding: 15px;
+    height: 100%;
+    margin-bottom: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.card-header-column {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    position: relative;
+    height: 100%;
+}
+
+.card-header-column h4 {
+    margin: 10px 0 0 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+}
+
+.icon-box-small {
+    width: 35px;
+    height: 35px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.icon-box-small.green {
+    background: linear-gradient(135deg, #4CAF50 0%, #81C784 100%);
+    color: white;
+}
+
+.icon-box-small.pink {
+    background: linear-gradient(135deg, #FF4081 0%, #F8BBD0 100%);
+    color: white;
+}
+
+.icon-box-small .icon {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.arrow-right {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+    font-size: 20px;
+}
+
+.success-icon-large {
+    margin-bottom: 20px;
+}
+
+.redeem-note {
+    margin-top: 15px;
+    font-size: 13px;
+    color: #666;
+    line-height: 1.4;
+}
+
+.primary-btn.disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.primary-btn.disabled:active {
+    transform: none;
+    color: #999;
+    font-size: 20px;
+}
+
+/* Coupon Detail View Styling */
+.coupon-detail-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.coupon-detail-list {
+    list-style-type: disc;
+    padding-left: 20px;
+    margin: 0;
+    text-align: left;
+}
+
+.coupon-detail-list li {
+    margin-bottom: 12px;
+    font-size: 14px;
+    color: #333;
+    line-height: 1.5;
+}
+
+.coupon-detail-list li strong {
+    font-weight: 600;
+    color: #000;
+}
+
+/* Guest View Styles */
+.guest-view-container {
+    padding: 20px;
+    background-color: #f8f9fa;
+    /* Light background for contrast */
+}
+
+.guest-welcome-text {
+    text-align: center;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: #333;
+    padding: 0 10px;
+}
+
+.guest-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px 20px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    border: 1px solid #eee;
+    margin-bottom: 20px;
+}
+
+.guest-card h3 {
+    font-size: 18px;
+    font-weight: 800;
+    margin: 0 0 10px 0;
+    text-transform: uppercase;
+    color: #333;
+    letter-spacing: 0.5px;
+}
+
+.guest-card p {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.5;
+    margin-bottom: 20px;
+}
+
+.guest-join-btn {
+    background-color: #1a1a1a;
+    color: white;
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    margin-bottom: 15px;
+    transition: all 0.2s;
+}
+
+.guest-join-btn:hover {
+    background-color: #333;
+    transform: translateY(-1px);
+}
+
+.guest-login-prompt {
+    font-size: 13px;
+    color: #666;
+}
+
+.guest-login-link {
+    color: #1a1a1a;
+    font-weight: 700;
+    text-decoration: underline;
+    cursor: pointer;
+    margin-left: 4px;
+}
+
+.guest-preview-section {
+    background: #fff;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+    border: 1px solid #f5f5f5;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.guest-preview-section::after {
+    /* Optional: Overlay/Disabled look if we want, but user design looks clean */
+}
+
+.guest-preview-section h4 {
+    font-size: 15px;
+    font-weight: 700;
+    margin: 0;
+    color: #333;
+}
+
+
+/* Member Info Card (Logged In) */
+.member-info-card {
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    border: 1px solid #eee;
+    position: relative;
+    text-align: left;
+    min-height: 180px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.member-card-title {
+    font-size: 18px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.member-card-subtitle {
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 15px;
+}
+
+.member-card-points {
+    font-size: 42px;
+    font-weight: 700;
+    color: #1a1a1a;
+    line-height: 1;
+}
+
+.member-card-points small {
+    font-size: 16px;
+    font-weight: 600;
+    margin-left: 5px;
+    text-transform: uppercase;
+}
+
+.member-card-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1a1a;
+    text-transform: uppercase;
+
+    /* Fix for Header Font Rendering */
+    .membership-header h3 {
+        font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin: 0;
+    }
+}
