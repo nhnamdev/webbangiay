@@ -1,0 +1,191 @@
+.reward-hub-container {
+    background: #f8f9fa;
+    min-height: 100vh;
+    padding-bottom: 50px;
+}
+
+/* Header Section */
+.reward-header {
+    background: #5DAD1F;
+    color: white;
+    padding: 30px 20px;
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+    position: relative;
+    box-shadow: 0 4px 10px rgba(93, 173, 31, 0.3);
+}
+
+.reward-user-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+
+.accumulated-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    margin-bottom: 5px;
+}
+
+.points-display-large {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.coin-icon-lg {
+    width: 40px;
+    height: 40px;
+    background: #FFCA28;
+    color: #FFF;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.5rem;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.points-value {
+    font-size: 3rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.expiry-date {
+    font-size: 0.8rem;
+    opacity: 0.8;
+    margin-top: 5px;
+}
+
+.user-tier-badge {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 5px 15px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    backdrop-filter: blur(5px);
+}
+
+.user-avatar-sm {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: white;
+    /* Placeholder image style */
+    background-size: cover;
+}
+
+/* Content Width Limiter */
+.reward-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    transform: translateY(-40px);
+    /* Overlap header */
+}
+
+/* Section Titles */
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #333;
+    margin: 30px 0 15px 0;
+}
+
+.section-title svg {
+    color: #673AB7;
+}
+
+/* Game Grid */
+.games-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+}
+
+.game-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+    height: 100%;
+}
+
+.game-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Specific Card Colors (Light Pastels) */
+.game-card.bg-green {
+    background: #f1f8e9;
+}
+
+/* Footsteps */
+.game-card.bg-yellow {
+    background: #fffde7;
+}
+
+/* Puzzle */
+.game-card.bg-purple {
+    background: #f3e5f5;
+}
+
+/* Wheel */
+.game-card.bg-blue {
+    background: #e3f2fd;
+}
+
+/* Deals */
+
+.game-icon {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+}
+
+.game-name {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.game-desc {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 20px;
+    flex-grow: 1;
+    /* Push button down */
+}
+
+.play-btn {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #5DAD1F;
+    background: white;
+    color: #5DAD1F;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.play-btn:hover {
+    background: #5DAD1F;
+    color: white;
+}

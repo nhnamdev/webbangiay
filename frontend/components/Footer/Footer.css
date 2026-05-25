@@ -1,0 +1,166 @@
+/* Reset cơ bản để footer hiển thị đúng font */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+.footer-wrapper {
+    background-color: #eaeaea; /* Màu nền xám giống mẫu */
+    padding: 3rem 0;
+    font-family: 'Roboto', sans-serif;
+    color: #333;
+    font-size: 14px;
+}
+
+.container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.footer-content {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 2rem;
+}
+
+/* Cột đầu tiên (Thông tin cty) sẽ rộng hơn các cột khác */
+.footer-column.brand-column {
+    flex: 2; /* Chiếm 2 phần */
+    min-width: 300px;
+    padding-right: 2rem;
+}
+
+/* Các cột còn lại chia đều */
+.footer-column {
+    flex: 1; /* Chiếm 1 phần */
+    min-width: 160px;
+}
+
+/* --- Style cho Brand Logo --- */
+.brand-logo h2 {
+    font-family: 'Arial Black', sans-serif; /* Font đậm cho logo */
+    font-size: 2rem;
+    margin: 0;
+    line-height: 1;
+    letter-spacing: -1px;
+}
+.brand-logo span {
+    font-weight: bold;
+    font-size: 0.9rem;
+    letter-spacing: 2px;
+    display: block;
+    border-bottom: 2px solid #8fd659; /* Gạch chân xanh lá */
+    display: inline-block;
+    margin-bottom: 1.5rem;
+}
+
+.company-name {
+    font-weight: 700;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+}
+
+.company-info p {
+    margin: 0.5rem 0;
+    color: #555;
+    line-height: 1.6;
+}
+
+/* --- Newsletter Section --- */
+.newsletter-section {
+    margin-top: 2rem;
+}
+
+.newsletter-section h4 {
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+}
+
+.newsletter-form {
+    display: flex;
+    gap: 10px;
+}
+
+.newsletter-form input {
+    flex: 1;
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    border-radius: 30px; /* Bo tròn ô input */
+    outline: none;
+}
+
+.newsletter-form button {
+    background-color: #8fd659; /* Màu xanh lá giống mẫu */
+    color: #000;
+    font-weight: bold;
+    border: none;
+    padding: 10px 30px;
+    border-radius: 30px; /* Bo tròn nút */
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.newsletter-form button:hover {
+    background-color: #7bc049;
+}
+
+/* --- Các cột Link --- */
+.footer-title {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+    color: #000;
+}
+
+.footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-links li {
+    margin-bottom: 0.8rem;
+}
+
+.footer-links a {
+    color: #555;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.footer-links a:hover {
+    color: #000;
+    text-decoration: underline;
+}
+
+/* --- Social Icons & Badge --- */
+.social-links {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 1.5rem;
+}
+
+.social-icon {
+    font-weight: bold;
+    color: #000;
+    font-size: 1.2rem;
+    text-decoration: none;
+}
+
+.gov-badge img {
+    max-width: 150px;
+    height: auto;
+}
+
+/* --- Responsive cho Mobile --- */
+@media (max-width: 768px) {
+    .footer-content {
+        flex-direction: column;
+    }
+
+    .footer-column.brand-column {
+        padding-right: 0;
+        margin-bottom: 2rem;
+    }
+}

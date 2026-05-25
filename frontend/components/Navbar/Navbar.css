@@ -1,0 +1,1020 @@
+.navbar-wrapper {
+    width: 100%;
+    font-family: 'Inter', sans-serif;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 999;
+    background-color: white;
+}
+
+.top-bar {
+    background-color: #84cc16;
+    font-size: 1.125rem;
+    color: #333;
+    padding: 0.75rem 0;
+}
+
+.top-bar-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-left: 5%;
+    padding-right: 5%;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+    .top-bar-content {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}
+
+.top-bar-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 500;
+}
+
+.top-bar-icon {
+    stroke-width: 2px;
+}
+
+.main-header {
+    background-color: white;
+    position: relative;
+    width: 100%;
+    z-index: 50;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    border-bottom: 1px solid #e0e0e0;
+}
+
+
+.header-container {
+    height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    justify-content: space-between;
+    padding-left: 30px;
+    padding-right: 30px;
+}
+
+@media (max-width: 768px) {
+    .header-container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}
+
+
+.logo-wrapper {
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    line-height: 1;
+}
+
+.logo-main {
+    height: 140px;
+    width: auto;
+    display: block;
+}
+
+@media (max-width: 1024px) {
+    .logo-main {
+        height: 60px;
+    }
+}
+
+
+.logo-abc {
+    color: #333;
+}
+
+.logo-hyphen {
+    color: #333;
+    margin: 0 2px;
+}
+
+.logo-mart {
+    color: #333;
+}
+
+.logo-sub {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #333;
+    letter-spacing: 0.1em;
+    margin-top: -2px;
+    text-align: left;
+}
+
+.desktop-nav {
+    display: flex;
+    align-items: center;
+    gap: 1.6rem;
+    margin-left: 5.2rem;
+    flex: 1;
+}
+
+.nav-link {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #333;
+    transition: color 0.2s;
+    text-decoration: none;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.nav-link:hover {
+    opacity: 0.7;
+}
+
+.nav-link.highlight {
+    color: #333;
+}
+
+.text-red {
+    color: #e50019;
+}
+
+.nav-arrow {
+    color: #666;
+    margin-top: 1px;
+}
+
+.search-bar {
+    display: flex;
+    align-items: center;
+    background-color: #f5f5f5;
+    border-radius: 9999px;
+    padding: 0.6rem 1.2rem;
+    margin: 0 1.2rem;
+    width: 260px;
+}
+
+.search-input {
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 1.35rem;
+    flex: 1;
+    color: #333;
+}
+
+.search-icon {
+    color: #999;
+    cursor: pointer;
+}
+
+.header-icons {
+    display: flex;
+    align-items: center;
+    gap: 1.8rem;
+}
+
+.icon-item {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    color: #333;
+    text-decoration: none;
+}
+
+.icon {
+    stroke-width: 1.5px;
+}
+
+.icon-item:hover {
+    color: black;
+}
+
+.cart-item {
+    position: relative;
+}
+
+.cart-badge {
+    position: absolute;
+    top: -9px;
+    /* -6 * 1.5 */
+    right: -12px;
+    /* -8 * 1.5 */
+    background-color: #84cc16;
+    /* Match top bar */
+    color: white;
+    font-size: 0.975rem;
+    /* 0.65 * 1.5 */
+    font-weight: bold;
+    border-radius: 50%;
+    width: 27px;
+    /* 18 * 1.5 */
+    height: 27px;
+    /* 18 * 1.5 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.lang-select {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    border-left: 1px solid #ddd;
+    padding-left: 1rem;
+}
+
+.flag-icon {
+    width: 36px;
+    /* 24px * 1.5 */
+    height: auto;
+    border-radius: 2px;
+}
+
+.lang-code {
+    font-size: 1.275rem;
+    /* 0.85 * 1.5 */
+    font-weight: 600;
+    color: #333;
+}
+
+.mobile-menu-btn {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #333;
+}
+
+.mobile-header {
+    display: none;
+}
+
+
+/* --- Mega Menu Styles --- */
+
+.nav-item-wrapper {
+    position: relative;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.mega-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: white;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    z-index: 50;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: all 0.2s ease-in-out;
+    border-top: 2px solid #e5e5e5;
+    min-width: 250px;
+    padding: 1rem;
+    margin-top: 0px;
+}
+
+/* Show on hover */
+.nav-item-wrapper:hover .mega-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+/* --- Mega Menu List (Brands) --- */
+.mega-menu-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem 2rem;
+    width: 300px;
+}
+
+.mega-menu-item {
+    font-size: 1.1rem;
+    color: #333;
+    text-decoration: none;
+    padding: 0.5rem 0;
+    transition: color 0.2s;
+    font-weight: 500;
+}
+
+.mega-menu-item:hover {
+    color: #e50019;
+}
+
+/* --- Mega Menu Columns (Categories) --- */
+.mega-menu-columns {
+    display: flex;
+    gap: 3rem;
+    width: max-content;
+    padding: 2rem;
+}
+
+.mega-menu-column {
+    display: flex;
+    flex-direction: column;
+    min-width: 150px;
+}
+
+.column-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: #333;
+    text-decoration: none;
+    text-transform: uppercase;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 0.5rem;
+    display: inline-block;
+}
+
+.column-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.column-item {
+    font-size: 1.05rem;
+    color: #555;
+    text-decoration: none;
+    transition: color 0.15s;
+}
+
+.column-item:hover {
+    color: #e50019;
+}
+
+/* --- Mega Menu Tabs (New Arrivals) --- */
+.mega-menu-tabs {
+    width: 900px;
+    padding: 0;
+    background: #fff;
+    left: -200px;
+    /* Rough centering for now */
+}
+
+@media (max-width: 1400px) {
+    .mega-menu-tabs {
+        left: -400px;
+    }
+}
+
+.tabs-header {
+    display: flex;
+    border-bottom: 1px solid #e5e5e5;
+    background: #f9f9f9;
+}
+
+.tab-link {
+    padding: 1rem 2rem;
+    cursor: pointer;
+    font-weight: 600;
+    color: #666;
+    transition: all 0.2s;
+    border-bottom: 2px solid transparent;
+    font-size: 1.15rem;
+}
+
+.tab-link:hover,
+.tab-link.active {
+    color: #e50019;
+    background: #fff;
+    border-bottom-color: #e50019;
+}
+
+.tab-content {
+    display: flex;
+    padding: 2rem;
+    gap: 2rem;
+    min-height: 200px;
+}
+
+.tab-card {
+    display: flex;
+    flex-direction: column;
+    width: 33%;
+    text-decoration: none;
+    align-items: center;
+}
+
+.tab-card .img-wrapper {
+    width: 100%;
+    aspect-ratio: 1/1;
+    overflow: hidden;
+    margin-bottom: 1rem;
+    background: #f0f0f0;
+}
+
+.tab-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s;
+}
+
+.tab-card:hover img {
+    transform: scale(1.05);
+}
+
+.card-title {
+    font-weight: 700;
+    color: #333;
+    font-size: 1.1rem;
+    text-align: center;
+}
+
+.tab-card:hover .card-title {
+    color: #e50019;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .top-bar-content {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .top-bar {
+        display: none;
+        /* Often hidden on mobile or simplified */
+    }
+
+    .desktop-nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 300px;
+        height: 100vh;
+        background: white;
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 1rem;
+        transform: translateX(-100%);
+        transition: transform 0.3s;
+        box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+        z-index: 1001;
+        /* Higher than Navbar to sit on top */
+        margin-left: 0;
+        gap: 0;
+        overflow-y: auto;
+        /* Enable scrolling for long menu */
+    }
+
+    .desktop-nav.open {
+        transform: translateX(0);
+    }
+
+    .nav-item-wrapper {
+        flex-direction: column;
+        align-items: flex-start;
+        width: 100%;
+        height: auto;
+    }
+
+    .mega-menu {
+        position: static;
+        width: 100%;
+        min-width: unset;
+        box-shadow: none;
+        border: none;
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+        padding: 0 0 0 1rem;
+        display: none;
+        /* Hide by default, show on stick/hover or add JS later. For now let's show on hover/click focus */
+        margin-top: 0;
+    }
+
+    /* Simple hack: Show mega menu when hovering nav-item on mobile? 
+       No, that's bad. Let's make them always visible for now to ensure they are accessible 
+       OR rely on the fact that 'hover' on mobile sometimes works as first tap. 
+       Let's display them but maybe collapsed? 
+       Actually, 'display: none' means they are gone. 
+       Let's try 'display: block' but indented. 
+    */
+    .nav-item-wrapper:hover .mega-menu,
+    .nav-item-wrapper:focus-within .mega-menu {
+        display: block;
+    }
+
+    .mega-menu-list {
+        width: 100%;
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .mega-menu-columns {
+        width: 100%;
+        flex-direction: column;
+        gap: 1rem;
+        padding: 0.5rem;
+    }
+
+    .mega-menu-column {
+        min-width: unset;
+    }
+
+    .mega-menu-tabs {
+        width: 100%;
+        left: auto;
+        padding: 0;
+    }
+
+    .tabs-header {
+        flex-direction: column;
+    }
+
+    .tab-content {
+        flex-direction: column;
+        padding: 1rem;
+        gap: 1rem;
+    }
+
+    .tab-card {
+        width: 100%;
+        flex-direction: row;
+        gap: 1rem;
+    }
+
+    .tab-card .img-wrapper {
+        width: 80px;
+        height: 80px;
+        margin-bottom: 0;
+    }
+
+    .mobile-header {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        margin-bottom: 2rem;
+        font-weight: bold;
+        font-size: 1.25rem;
+    }
+
+    .close-menu-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+    }
+
+    .nav-link {
+        width: 100%;
+        padding: 1rem 0;
+        font-size: 1rem;
+        border-bottom: 1px solid #f0f0f0;
+        justify-content: space-between;
+    }
+
+    .mobile-menu-btn {
+        display: block;
+    }
+
+    .search-bar {
+        display: none;
+    }
+
+    .logo-sub {
+        display: none;
+        /* Simplify logo on mobile */
+    }
+}
+
+/* --- CSS cho Menu Người dùng --- */
+
+/* Để định vị menu con theo icon cha */
+.user-menu-container,
+.cart-item {
+    position: relative;
+    cursor: pointer;
+}
+
+/* Hiệu ứng khi di chuột vào icon */
+.user-icon-wrapper:hover .icon,
+.cart-icon-wrapper:hover .icon {
+    color: #555;
+    /* Hoặc màu chủ đạo của web bạn */
+}
+
+/* Hộp menu thả xuống */
+.user-dropdown {
+    position: absolute;
+    top: 130%;
+    /* Cách icon một chút */
+    right: 0;
+    /* Căn phải theo icon */
+    width: 280px;
+    /* Độ rộng của menu */
+    background-color: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    /* Đổ bóng */
+    border-radius: 8px;
+    /* Bo góc */
+    border: 1px solid #f0f0f0;
+    z-index: 1000;
+    /* Đảm bảo nằm trên cùng */
+    overflow: hidden;
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+.cart-dropdown {
+    width: 320px;
+}
+
+.cart-btn {
+    width: 100%;
+    padding: 14px;
+    background-color: #8fd659;
+    /* Màu xanh lá giống mẫu */
+    color: #ffffff;
+    /* Chữ đen hoặc trắng tùy mẫu thực tế, mẫu này chữ đen */
+    border: none;
+    border-radius: 30px;
+    /* Bo tròn nút */
+    font-weight: 500;
+    font-size: 1rem;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: opacity 0.3s;
+}
+
+/* Mũi tên nhỏ chỉ lên trên (Option - cho đẹp) */
+.user-dropdown::before {
+    content: "";
+    position: absolute;
+    top: -6px;
+    right: 10px;
+    width: 12px;
+    height: 12px;
+    background: white;
+    transform: rotate(45deg);
+    border-top: 1px solid #f0f0f0;
+    border-left: 1px solid #f0f0f0;
+}
+
+/* Link bên trong menu */
+.user-dropdown-item {
+    display: block;
+    padding: 12px 16px;
+    color: #333;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.2s;
+    text-align: center;
+}
+
+.user-dropdown-item:hover {
+    background-color: #f5f5f5;
+    /* Màu nền khi di chuột vào */
+    color: #000;
+}
+
+/* Hiệu ứng hiện ra nhẹ nhàng */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* --- Language Switcher CSS --- */
+
+.lang-select {
+    position: relative;
+    /* Ensure dropdown is relative to this */
+}
+
+.lang-dropdown {
+    position: absolute;
+    top: 140%;
+    /* Space below the language selector */
+    right: 0;
+    width: 150px;
+    background-color: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    border: 1px solid #f0f0f0;
+    z-index: 1000;
+    overflow: hidden;
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+/* Optional triangle arrow like user menu */
+.lang-dropdown::before {
+    content: "";
+    position: absolute;
+    top: -6px;
+    right: 10px;
+    /* Aligns roughly with center of lang select if right aligned */
+    width: 12px;
+    height: 12px;
+    background: white;
+    transform: rotate(45deg);
+    border-top: 1px solid #f0f0f0;
+    border-left: 1px solid #f0f0f0;
+}
+
+.lang-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    width: 100%;
+    color: #333;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.lang-dropdown-item:hover {
+    background-color: #f5f5f5;
+    color: #000;
+}
+
+.flag-icon-sm {
+    width: 20px;
+    height: auto;
+    border-radius: 2px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* --- Search Suggestions --- */
+.search-bar {
+    position: relative;
+    /* Ensure dropdown is relative to search bar */
+}
+
+.search-suggestions {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 420px;
+    background: white;
+    border: 1px solid #e8e8e8;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15), 0 4px 16px rgba(0, 0, 0, 0.08);
+    z-index: 1001;
+    overflow: hidden;
+    animation: suggestionsFadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    max-height: 520px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #e0e0e0 transparent;
+}
+
+.search-suggestions::-webkit-scrollbar {
+    width: 5px;
+}
+.search-suggestions::-webkit-scrollbar-thumb {
+    background-color: #e0e0e0;
+    border-radius: 10px;
+}
+
+@keyframes suggestionsFadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+.suggestions-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 14px 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border-bottom: 1px solid #f5f5f5;
+}
+
+.suggestions-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 24px;
+    color: #888;
+    font-size: 0.9rem;
+}
+
+.spin-icon {
+    animation: spin 0.8s linear infinite;
+    color: #84cc16;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.search-loading-icon {
+    animation: spin 0.8s linear infinite;
+    color: #84cc16 !important;
+}
+
+.suggestion-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    text-decoration: none;
+    color: #222;
+    transition: background-color 0.15s ease;
+    border-bottom: 1px solid #f5f5f5;
+    cursor: pointer;
+}
+
+.suggestion-item:last-of-type {
+    border-bottom: none;
+}
+
+.suggestion-item:hover,
+.suggestion-active {
+    background-color: #f8fdf2;
+}
+
+.suggestion-img-wrap {
+    position: relative;
+    flex-shrink: 0;
+    width: 60px;
+    height: 60px;
+    border-radius: 10px;
+    overflow: hidden;
+    background-color: #f5f5f5;
+}
+
+.suggestion-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.2s;
+}
+
+.suggestion-item:hover .suggestion-image {
+    transform: scale(1.06);
+}
+
+.suggestion-badge-sale {
+    position: absolute;
+    bottom: 2px;
+    left: 2px;
+    background: #e50019;
+    color: white;
+    font-size: 0.58rem;
+    font-weight: 800;
+    padding: 1px 4px;
+    border-radius: 3px;
+    letter-spacing: 0.02em;
+}
+
+.suggestion-badge-new {
+    position: absolute;
+    bottom: 2px;
+    left: 2px;
+    background: #84cc16;
+    color: white;
+    font-size: 0.58rem;
+    font-weight: 800;
+    padding: 1px 4px;
+    border-radius: 3px;
+    letter-spacing: 0.02em;
+}
+
+.suggestion-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+
+.suggestion-name {
+    font-size: 0.93rem;
+    font-weight: 600;
+    color: #222;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.3;
+}
+
+.suggestion-highlight {
+    background: #dcfce7;
+    color: #166534;
+    font-weight: 700;
+    border-radius: 3px;
+    padding: 0 2px;
+}
+
+.suggestion-brand {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.75rem;
+    color: #999;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.suggestion-prices {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 2px;
+}
+
+.suggestion-price {
+    font-size: 0.88rem;
+    color: #333;
+    font-weight: 700;
+}
+
+.suggestion-price-sale {
+    font-size: 0.88rem;
+    color: #e50019;
+    font-weight: 700;
+}
+
+.suggestion-price-original {
+    font-size: 0.78rem;
+    color: #bbb;
+    font-weight: 400;
+    text-decoration: line-through;
+}
+
+.suggestions-view-all {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 13px 16px;
+    background: linear-gradient(135deg, #f0fdf0, #f8fff0);
+    border: none;
+    border-top: 1px solid #e8f5e9;
+    color: #3a7c0f;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    letter-spacing: 0.01em;
+}
+
+.suggestions-view-all:hover {
+    background: linear-gradient(135deg, #e0fad8, #ecfce4);
+    color: #166534;
+}
+
+.suggestions-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 28px 20px;
+    gap: 6px;
+    color: #bbb;
+}
+
+.suggestions-empty-icon {
+    color: #ddd;
+    margin-bottom: 6px;
+}
+
+.suggestions-empty p {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #888;
+    margin: 0;
+}
+
+.suggestions-empty span {
+    font-size: 0.82rem;
+    color: #bbb;
+}

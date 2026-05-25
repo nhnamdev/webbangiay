@@ -1,0 +1,195 @@
+.social-news-section {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+    background-color: white;
+}
+
+.social-news-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+}
+
+.block-title {
+    font-family: 'Oswald', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    line-height: 1;
+}
+
+.flex-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 1.5rem;
+}
+
+.view-more-link {
+    font-size: 0.9rem;
+    text-decoration: underline;
+    color: #333;
+    font-weight: 500;
+}
+
+/* Social Media Styles */
+.social-block {
+    margin-bottom: 3rem;
+}
+
+.social-icons-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem 2rem;
+}
+
+.social-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.social-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.social-name {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #333;
+    letter-spacing: 0.05em;
+}
+
+.social-count {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.social-count.highlight {
+    color: #84cc16;
+    /* Lime/Green color from screenshot usually, but user image has green numbers? */
+    /* Wait, the image shows green text for counts. */
+    color: #4ade80;
+    /* Brighter green */
+}
+
+/* Link Wrapper for Social Items */
+.social-link-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    text-decoration: none;
+    color: inherit;
+    width: 100%;
+}
+
+.social-link-wrapper:hover .social-name {
+    color: #e50019;
+    /* Hover effect */
+}
+
+/* FAQ Styles */
+.faq-list {
+    border-top: 1px solid #eee;
+}
+
+.faq-item {
+    border-bottom: 1px solid #eee;
+    padding: 1rem 0;
+    cursor: pointer;
+}
+
+.faq-question {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #333;
+}
+
+.faq-answer {
+    margin-top: 0.5rem;
+    color: #666;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+/* News Styles */
+.news-item {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.news-thumbnail {
+    width: 180px;
+    height: 120px;
+    flex-shrink: 0;
+    overflow: hidden;
+    border-radius: 8px;
+}
+
+.news-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s;
+}
+
+.news-item:hover .news-thumbnail img {
+    transform: scale(1.05);
+}
+
+.news-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.news-title {
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: 0.5rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    color: #333;
+}
+
+.news-excerpt {
+    font-size: 0.85rem;
+    color: #666;
+    line-height: 1.4;
+    margin-bottom: 0.5rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.news-more {
+    font-size: 0.85rem;
+    text-decoration: underline;
+    color: #333;
+    font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .social-news-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+
+    .social-icons-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

@@ -1,0 +1,212 @@
+
+
+import React, { useEffect, useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
+
+import { getNewsById, getNews } from '../../services/api';
+import './ArticleDetail.css';
+
+const ArticleDetail = () => {
+    const { id } = useParams();
+    const [article, setArticle] = useState(null);
+    const [recentPosts, setRecentPosts] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const articleData = await getNewsById(id);
+                setArticle(articleData);
+
+                // Fetch recent posts (exclude current one)
+                const allNews = await getNews();
+                const others = allNews.filter(item => item.id !== parseInt(id)).slice(0, 5);
+                setRecentPosts(others);
+            } catch (error) {
+                console.error("Failed to load article:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+        window.scrollTo(0, 0);
+    }, [id]);
+
+    if (loading) return <div className="loading-screen"><div className="spinner"></div></div>;
+    if (!article) return <div className="text-center" style={{ padding: '5rem' }}><h2>Bài viết không tồn tại</h2></div>;
+
+    return (
+        <div className="article-detail-container">
+            {/* Breadcrumb */}
+            <nav className="breadcrumb" aria-label="breadcrumbs">
+                <Link to="/" title="Trang chủ">Trang chủ</Link>
+                <span>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M9.5 7L14.5 12L9.5 17" stroke="black" strokeLinecap="round" strokeLinejoin="round"></path>
+                    </svg>
+                </span>
+                <Link to="/blogs/news" title="Bài viết">Bài viết</Link>
+                <span>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M9.5 7L14.5 12L9.5 17" stroke="black" strokeLinecap="round" strokeLinejoin="round"></path>
+                    </svg>
+                </span>
+                <span className="current-page">{article.title}</span>
+            </nav>
+
+            {/* Hero Image */}
+            <div className="article-hero">
+                <div className="article-hero__image-wrapper">
+                    <img src={article.image} alt={article.title} className="article-hero__image" />
+                </div>
+                <div className="article-hero__content">
+                    <h1 className="article-hero__title">{article.title}</h1>
+                    <div className="article-share">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="18" cy="5" r="3"></circle>
+                            <circle cx="6" cy="12" r="3"></circle>
+                            <circle cx="18" cy="19" r="3"></circle>
+                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                        </svg>
+                        <span>Chia sẻ</span>
+                    </div>
+                </div>
+            </div>
+
+            <div className="article-main-grid">
+                {/* Main Content (Left) */}
+                <div className="grid__item articleleft" data-aos="fade-up">
+                    <div className="article-content" dangerouslySetInnerHTML={{ __html: article.content || article.excerpt }}>
+                    </div>
+
+                    {/* Navigation Buttons */}
+                    <div className="article-nav">
+                        {/* Logic for Next Post could be added here */}
+                        <div className="nav-posts-container">
+                            {/* Placeholder for Next Article */}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Sidebar (Right) */}
+                <div className="grid__item articleright article-sidebar" data-aos="fade-left">
+                    <div className="sidebar-section">
+                        <h2>Theo dõi chúng tôi</h2>
+                        <ul className="social-list">
+                            <li className="social-item">
+                                <a href="https://www.facebook.com/" target="_blank" rel="noreferrer">
+                                    <div className="social-icon-wrapper">
+                                        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <g clipPath="url(#clip0_35_1503)">
+                                                <path d="M40 20C40 8.9543 31.0457 0 20 0C8.9543 0 0 8.9543 0 20C0 29.9824 7.31367 38.2566 16.875 39.757V25.7813H11.7969V20H16.875V15.5938C16.875 10.5813 19.8609 7.8125 24.4293 7.8125C26.6168 7.8125 28.9062 8.20312 28.9062 8.20312V13.125H26.3844C23.9 13.125 23.125 14.6668 23.125 16.25V20H28.6719L27.7852 25.7813H23.125V39.757C32.6863 38.2566 40 29.9824 40 20Z" fill="black"></path>
+                                            </g>
+                                            <defs>
+                                                <clipPath id="clip0_35_1503">
+                                                    <rect width="40" height="40" fill="white"></rect>
+                                                </clipPath>
+                                            </defs>
+                                        </svg>
+                                    </div>
+                                    <div className="social-info">
+                                        <span className="social-name">Facebook</span>
+                                        <span className="social-stats">79K</span>
+                                    </div>
+                                </a>
+                            </li>
+                            <li className="social-item">
+                                <a href="https://www.instagram.com/" target="_blank" rel="noreferrer">
+                                    <div className="social-icon-wrapper">
+                                        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <g clipPath="url(#clip0_39_766)">
+                                                <path d="M20 3.60156C25.3438 3.60156 25.9766 3.625 28.0781 3.71875C30.0313 3.80469 31.0859 4.13281 31.7891 4.40625C32.7188 4.76563 33.3906 5.20313 34.0859 5.89844C34.7891 6.60156 35.2188 7.26563 35.5781 8.19531C35.8516 8.89844 36.1797 9.96094 36.2656 11.9062C36.3594 14.0156 36.3828 14.6484 36.3828 19.9844C36.3828 25.3281 36.3594 25.9609 36.2656 28.0625C36.1797 30.0156 35.8516 31.0703 35.5781 31.7734C35.2188 32.7031 34.7813 33.375 34.0859 34.0703C33.3828 34.7734 32.7188 35.2031 31.7891 35.5625C31.0859 35.8359 30.0234 36.1641 28.0781 36.25C25.9688 36.3438 25.3359 36.3672 20 36.3672C14.6563 36.3672 14.0234 36.3438 11.9219 36.25C9.96875 36.1641 8.91406 35.8359 8.21094 35.5625C7.28125 35.2031 6.60938 34.7656 5.91406 34.0703C5.21094 33.3672 4.78125 32.7031 4.42188 31.7734C4.14844 31.0703 3.82031 30.0078 3.73438 28.0625C3.64063 25.9531 3.61719 25.3203 3.61719 19.9844C3.61719 14.6406 3.64063 14.0078 3.73438 11.9062C3.82031 9.95312 4.14844 8.89844 4.42188 8.19531C4.78125 7.26563 5.21875 6.59375 5.91406 5.89844C6.61719 5.19531 7.28125 4.76563 8.21094 4.40625C8.91406 4.13281 9.97656 3.80469 11.9219 3.71875C14.0234 3.625 14.6563 3.60156 20 3.60156ZM20 0C14.5703 0 13.8906 0.0234375 11.7578 0.117188C9.63281 0.210938 8.17188 0.554687 6.90625 1.04688C5.58594 1.5625 4.46875 2.24219 3.35938 3.35938C2.24219 4.46875 1.5625 5.58594 1.04688 6.89844C0.554688 8.17188 0.210938 9.625 0.117188 11.75C0.0234375 13.8906 0 14.5703 0 20C0 25.4297 0.0234375 26.1094 0.117188 28.2422C0.210938 30.3672 0.554688 31.8281 1.04688 33.0938C1.5625 34.4141 2.24219 35.5312 3.35938 36.6406C4.46875 37.75 5.58594 38.4375 6.89844 38.9453C8.17188 39.4375 9.625 39.7812 11.75 39.875C13.8828 39.9688 14.5625 39.9922 19.9922 39.9922C25.4219 39.9922 26.1016 39.9688 28.2344 39.875C30.3594 39.7812 31.8203 39.4375 33.0859 38.9453C34.3984 38.4375 35.5156 37.75 36.625 36.6406C37.7344 35.5312 38.4219 34.4141 38.9297 33.1016C39.4219 31.8281 39.7656 30.375 39.8594 28.25C39.9531 26.1172 39.9766 25.4375 39.9766 20.0078C39.9766 14.5781 39.9531 13.8984 39.8594 11.7656C39.7656 9.64063 39.4219 8.17969 38.9297 6.91406C38.4375 5.58594 37.7578 4.46875 36.6406 3.35938C35.5313 2.25 34.4141 1.5625 33.1016 1.05469C31.8281 0.5625 30.375 0.21875 28.25 0.125C26.1094 0.0234375 25.4297 0 20 0Z" fill="black"></path>
+                                                <path d="M20 9.72656C14.3281 9.72656 9.72656 14.3281 9.72656 20C9.72656 25.6719 14.3281 30.2734 20 30.2734C25.6719 30.2734 30.2734 25.6719 30.2734 20C30.2734 14.3281 25.6719 9.72656 20 9.72656ZM20 26.6641C16.3203 26.6641 13.3359 23.6797 13.3359 20C13.3359 16.3203 16.3203 13.3359 20 13.3359C23.6797 13.3359 26.6641 16.3203 26.6641 20C26.6641 23.6797 23.6797 26.6641 20 26.6641Z" fill="black"></path>
+                                                <path d="M33.0781 9.32019C33.0781 10.6483 32 11.7186 30.6797 11.7186C29.3516 11.7186 28.2812 10.6405 28.2812 9.32019C28.2812 7.99207 29.3594 6.92175 30.6797 6.92175C32 6.92175 33.0781 7.99988 33.0781 9.32019Z" fill="black"></path>
+                                            </g>
+                                            <defs>
+                                                <clipPath id="clip0_39_766">
+                                                    <rect width="40" height="40" fill="white"></rect>
+                                                </clipPath>
+                                            </defs>
+                                        </svg>
+                                    </div>
+                                    <div className="social-info">
+                                        <span className="social-name">Instagram</span>
+                                        <span className="social-stats">17.3K</span>
+                                    </div>
+                                </a>
+                            </li>
+                            <li className="social-item">
+                                <a href="https://www.tiktok.com/" target="_blank" rel="noreferrer">
+                                    <div className="social-icon-wrapper">
+                                        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M28.4541 0H21.7129V27.2463C21.7129 30.4928 19.1202 33.1594 15.8937 33.1594C12.6671 33.1594 10.0744 30.4928 10.0744 27.2463C10.0744 24.058 12.6095 21.4492 15.7209 21.3333V14.4928C8.86445 14.6087 3.33325 20.2319 3.33325 27.2463C3.33325 34.3189 8.97968 40 15.9513 40C22.9229 40 28.5693 34.2609 28.5693 27.2463V13.2753C31.1045 15.1304 34.2157 16.2319 37.4999 16.2899V9.44928C32.4297 9.27537 28.4541 5.10144 28.4541 0Z" fill="black"></path>
+                                        </svg>
+                                    </div>
+                                    <div className="social-info">
+                                        <span className="social-name">TikTok</span>
+                                        <span className="social-stats">18.1K</span>
+                                    </div>
+                                </a>
+                            </li>
+                            <li className="social-item">
+                                <a href="https://zalo.me/" target="_blank" rel="noreferrer">
+                                    <div className="social-icon-wrapper">
+                                        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <g clipPath="url(#clip0_449_10017)">
+                                                <rect width="40" height="40" rx="20" fill="white"></rect>
+                                                <path d="M10.0723 38.4848C9.36205 38.22 8.6881 37.8826 8.03517 37.5077C4.14517 35.2729 1.7992 31.9469 0.699991 27.7497C0.374796 26.5085 0.211655 25.2413 0.114496 23.9653C-0.0606088 21.6621 0.0213242 19.355 0.00899801 17.0497C0.00138476 15.6127 0.0825927 14.1793 0.263135 12.7522C0.634009 9.82393 1.61213 7.11735 3.41683 4.71661C4.82166 2.84792 6.59337 1.38924 8.71094 0.323022C8.93789 0.208684 9.15795 0.0789141 9.40302 0C9.4284 0.0571689 9.38671 0.0736532 9.36423 0.0950477C7.54358 1.8266 6.26491 3.8945 5.33392 6.1767C4.62299 7.91947 4.15677 9.72468 3.87653 11.5772C3.63943 13.1467 3.54445 14.7243 3.59339 16.3086C3.70179 19.8106 4.41344 23.1804 5.98503 26.357C6.44147 27.2794 6.95155 28.1766 7.59904 28.9846C8.24544 29.7913 8.31034 30.6674 8.06236 31.6028C7.78684 32.6427 7.2376 33.5371 6.4741 34.3115C6.39579 34.3908 6.30044 34.4606 6.29319 34.5844C6.18407 34.5844 6.22141 34.6247 6.26745 34.6693C6.42443 34.8215 6.5698 34.9846 6.72352 35.1389C7.36521 35.7853 8.01886 36.4201 8.66707 37.0605C9.11299 37.5011 9.55674 37.9437 10.0005 38.3863C10.0288 38.4147 10.0487 38.4519 10.0723 38.4848Z" fill="black"></path>
+                                                <path d="M10.0719 38.4849C10.0483 38.452 10.0291 38.4151 10.0009 38.3867C9.55711 37.9441 9.11337 37.5015 8.66745 37.061C8.0196 36.4205 7.36559 35.7854 6.7239 35.1393C6.57055 34.9846 6.42517 34.8216 6.26783 34.6697C6.22179 34.6252 6.18408 34.5848 6.29357 34.5848C6.36318 34.7037 6.48644 34.7142 6.60607 34.7262C7.64075 34.83 8.66636 34.7567 9.68473 34.5697C10.7723 34.3705 11.824 34.0601 12.8268 33.6035C12.9254 33.5586 13.0019 33.5652 13.0951 33.6143C15.449 34.8482 17.9683 35.6065 20.5945 36.0617C22.7646 36.4381 24.9522 36.5801 27.1535 36.5082C30.4986 36.3984 33.7524 35.8334 36.872 34.6273C37.8922 34.233 38.8761 33.768 39.8194 33.2229C39.8684 33.1949 39.9111 33.1489 39.9996 33.1507C39.7676 33.4986 39.5156 33.8136 39.2542 34.1215C37.033 36.7372 34.1747 38.3751 30.8202 39.2411C29.4295 39.5999 28.0091 39.7917 26.5738 39.8766C23.5891 40.0537 20.6014 40.011 17.6156 39.9324C15.6648 39.8812 13.7335 39.6395 11.8527 39.105C11.2465 38.9328 10.6447 38.7469 10.0719 38.4853V38.4849Z" fill="black"></path>
+                                                <path d="M11.6054 20.8955H11.8585C13.7535 20.8955 15.6484 20.8983 17.5434 20.8909C17.7243 20.8902 17.7667 20.94 17.7559 21.1045C17.7406 21.3371 17.754 21.5714 17.7515 21.8049C17.7472 22.2363 17.4455 22.5362 17.0036 22.5366C14.4024 22.5387 11.8012 22.5366 9.20001 22.5401C9.0782 22.5401 9.04557 22.5032 9.05174 22.3917C9.06261 22.1995 9.05065 22.0059 9.06588 21.8141C9.09234 21.477 9.24823 21.1933 9.46611 20.9323C11.306 18.7311 13.1426 16.5275 14.9803 14.3246C15.0281 14.2671 15.0742 14.2078 15.1249 14.144C15.051 14.1068 14.985 14.1243 14.9219 14.1243C13.1052 14.1233 11.2886 14.1212 9.47228 14.1271C9.3124 14.1278 9.27143 14.0906 9.27542 13.936C9.28702 13.4692 9.28376 13.002 9.27687 12.5348C9.27506 12.411 9.29754 12.3661 9.4411 12.3665C12.1511 12.371 14.8606 12.371 17.5706 12.3665C17.7076 12.3665 17.7381 12.4015 17.741 12.5309C17.7544 13.1528 17.5503 13.6827 17.1424 14.1724C15.3102 16.3714 13.4957 18.5849 11.675 20.7934C11.6573 20.8148 11.6435 20.839 11.6054 20.8948V20.8955Z" fill="black"></path>
+                                                <path d="M24.7412 15.3859C24.7412 15.2354 24.7452 15.1074 24.7398 14.9798C24.7361 14.8959 24.7521 14.8549 24.8551 14.856C25.3438 14.8609 25.8324 14.8626 26.3211 14.8552C26.4607 14.8531 26.4401 14.9314 26.4401 15.0124C26.4401 16.1915 26.4411 17.3707 26.4411 18.5498C26.4411 19.8223 26.4379 21.0951 26.4433 22.3675C26.444 22.5061 26.4056 22.5474 26.2631 22.5408C26.0224 22.5296 25.7806 22.5383 25.5392 22.5376C25.0682 22.5359 24.8021 22.3121 24.7293 21.8439C23.6775 22.5489 22.529 22.7775 21.2899 22.4822C20.3502 22.2584 19.5863 21.7566 19.0026 21.0081C17.8487 19.5277 17.9248 17.4433 19.1574 16.0386C20.4328 14.5852 22.8104 14.0928 24.7405 15.3859H24.7412ZM24.7158 18.6154C24.7133 17.3209 23.6391 16.2806 22.3024 16.2782C20.9603 16.2757 19.8789 17.324 19.8811 18.6256C19.8832 19.9177 20.9607 20.9586 22.2966 20.9597C23.6474 20.9607 24.7184 19.9229 24.7158 18.6154Z" fill="black"></path>
+                                                <path d="M39.2009 18.5981C39.1955 20.8203 37.3382 22.6062 35.0372 22.6027C32.75 22.5992 30.892 20.787 30.9003 18.5679C30.9086 16.3605 32.7717 14.5707 35.0593 14.5735C37.3563 14.5759 39.2067 16.3741 39.2013 18.5981H39.2009ZM35.0658 16.2486C33.711 16.243 32.6231 17.2815 32.6118 18.5911C32.6006 19.8846 33.6849 20.9501 35.022 20.9589C36.3902 20.968 37.4876 19.9267 37.4912 18.6156C37.4948 17.3022 36.421 16.2542 35.0658 16.2486Z" fill="black"></path>
+                                                <path d="M29.7004 17.4568C29.7004 19.0856 29.6975 20.7144 29.7047 22.3432C29.7054 22.5091 29.6547 22.5466 29.4941 22.5406C29.1747 22.5291 28.8546 22.5389 28.5348 22.5368C28.1324 22.534 27.8891 22.3039 27.8888 21.9174C27.8873 18.7822 27.8888 15.6471 27.8855 12.5122C27.8855 12.3972 27.9185 12.366 28.036 12.3674C28.5366 12.3733 29.0376 12.3758 29.5387 12.3663C29.6822 12.3635 29.7036 12.4112 29.7033 12.535C29.6993 14.1754 29.7004 15.8161 29.7004 17.4565V17.4568Z" fill="black"></path>
+                                            </g>
+                                            <defs>
+                                                <clipPath id="clip0_449_10017">
+                                                    <rect width="40" height="40" rx="20" fill="white"></rect>
+                                                </clipPath>
+                                            </defs>
+                                        </svg>
+                                    </div>
+                                    <div className="social-info">
+                                        <span className="social-name">Zalo</span>
+                                        <span className="social-stats">6.5K</span>
+                                    </div>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div className="sidebar-section">
+                        <h2>Bài viết gần đây</h2>
+                        {recentPosts.map(post => (
+                            <div key={post.id} className="recent-post">
+                                <Link to={`/blogs/news/${post.id}`}>
+                                    <img src={post.image} alt={post.title} className="recent-post__img" />
+                                </Link>
+                                <div className="recent-post__info">
+                                    <h3>
+                                        <Link to={`/blogs/news/${post.id}`}>
+                                            {post.title}
+                                        </Link>
+                                    </h3>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            <div className="element-margin-top center" style={{ textAlign: 'center', marginTop: '3rem' }}>
+                <Link to="/blogs/news" className="link animate-arrow" style={{ color: '#000', textDecoration: 'none', fontWeight: '500' }}>
+                    Quay lại bài viết
+                </Link>
+            </div>
+
+        </div>
+    );
+};
+
+export default ArticleDetail;
