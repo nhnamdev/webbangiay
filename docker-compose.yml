@@ -21,8 +21,6 @@ services:
       JAVA_OPTS: ${JAVA_OPTS:--XX:MaxRAMPercentage=75.0}
     expose:
       - "8080"
-    networks:
-      - coolify
 
   frontend:
     build:
@@ -35,9 +33,3 @@ services:
       - backend
     expose:
       - "80"
-    networks:
-      - coolify
-
-networks:
-  coolify:
-    external: true
