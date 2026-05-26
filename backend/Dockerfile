@@ -1,32 +1,31 @@
 # syntax=docker/dockerfile:1.7
 
-# ---------- Build stage ----------
-FROM maven:3.9-eclipse-temurin-17 AS build
+FROM maven:3.9.9-eclipse-temurin-17 AS build
 WORKDIR /workspace
 
-COPY pom.xml .
-RUN --mount=type=cache,target=/root/.m2 mvn -B -q -e -DskipTests dependency:go-offline
+COPY pom.xml ./
+RUN --mount=type=cache,target=/root/.m2 \
+    mvn -B -DskipTests dependency:go-offline
 
 COPY src ./src
-RUN --mount=type=cache,target=/root/.m2 mvn -B -q -e -DskipTests package \
- && cp target/*.jar /workspace/app.jar
+RUN --mount=type=cache,target=/root/.m2 \
+    mvn -B -DskipTests package && \
+    cp target/*.jar /workspace/app.jar
 
-# ---------- Runtime stage ----------
-FROM eclipse-temurin:17-jre-jammy
+FROM eclipse-temurin:17-jre-jammy AS runtime
 WORKDIR /app
 
-RUN groupadd --system spring && useradd --system --gid spring --no-create-home spring
-USER spring:spring
+RUN groupadd --system spring && \
+    useradd --system --gid spring --no-create-home spring
 
 COPY --from=build /workspace/app.jar /app/app.jar
+RUN chown spring:spring /app/app.jar
 
-ENV SERVER_PORT=8080 \
-    JAVA_OPTS=""
+USER spring:spring
+
+ENV SERVER_PORT=8080
+ENV JAVA_OPTS="-XX:MaxRAMPercentage=75.0"
 
 EXPOSE 8080
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
-  CMD wget -qO- http://localhost:8080/actuator/health || \
-      wget -qO- http://localhost:8080/api/products > /dev/null || exit 1
-
-ENTRYPOINT ["sh","-c","exec java $JAVA_OPTS -jar /app/app.jar"]
+ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -jar /app/app.jar"]
