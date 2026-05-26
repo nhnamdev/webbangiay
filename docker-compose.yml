@@ -31,5 +31,5 @@ services:
     restart: unless-stopped
     depends_on:
       - backend
-    expose:
+    ports:
       - "80"
