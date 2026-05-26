@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import './SnakeGame.css';
 import './GameOverlay.css';
 import { X, HelpCircle } from 'lucide-react';
-import { supabase } from '../../services/supabaseClient';
+import { get, post } from '../../services/http';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -52,16 +52,15 @@ const SnakeGame = ({ onClose }) => {
         if (!user) return;
 
         const checkDailyLimit = async () => {
-            const today = new Date().toDateString();
-            const { data, error } = await supabase
-                .from('point_transactions')
-                .select('created_at')
-                .eq('user_id', user.id)
-                .eq('reason', 'Play Snake Game')
-                .gte('created_at', new Date(new Date().setHours(0, 0, 0, 0)).toISOString());
-            if (data && data.length > 0) {
-                setDailyPlaysLeft(0);
-            } else {
+            try {
+                const all = await get(`/points/user/${user.id}/transactions`);
+                const startOfDay = new Date(new Date().setHours(0, 0, 0, 0)).getTime();
+                const today = (all || []).filter(t =>
+                    t.reason === 'Play Snake Game' && new Date(t.createdAt).getTime() >= startOfDay
+                );
+                setDailyPlaysLeft(today.length > 0 ? 0 : 1);
+            } catch (err) {
+                console.error('Error checking daily limit:', err.message);
                 setDailyPlaysLeft(1);
             }
         };
@@ -107,14 +106,11 @@ const SnakeGame = ({ onClose }) => {
 
         // Record play attempt
         try {
-            const { error } = await supabase.from('point_transactions').insert({
-                user_id: user.id,
+            await post(`/points/user/${user.id}`, {
+                type: 'spend',
                 amount: 0,
                 reason: 'Play Snake Game',
-                type: 'spend'
             });
-
-            if (error) throw error;
 
             setDailyPlaysLeft(0);
 
@@ -157,19 +153,14 @@ const SnakeGame = ({ onClose }) => {
         const code = `${tier.codePrefix} -${Math.random().toString(36).substring(2, 7).toUpperCase()} `;
 
         try {
-            // Check if user already has a voucher of this type/day? 
-            // Allow multiple for now as per game logic.
-
-            const { error } = await supabase.from('user_vouchers').insert({
-                user_id: user.id,
-                code: code,
-                discount_amount: tier.amount,
-                min_order_value: tier.amount * 5, // Example logic: Min order 5x value
+            await post('/vouchers', {
+                userId: user.id,
+                code,
+                discountAmount: tier.amount,
+                minOrderValue: tier.amount * 5,
                 status: 'active',
-                expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days
+                expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
             });
-
-            if (error) throw error;
 
             setWonVoucherCode(code);
             setRewardMessage(`Chúc mừng! Voucher ${tier.amount.toLocaleString()}đ đã được lưu vào ví.`);
@@ -178,7 +169,7 @@ const SnakeGame = ({ onClose }) => {
             window.dispatchEvent(new Event('pointsUpdated')); // Using existing event to reload membership data
 
         } catch (err) {
-            console.error("Error saving voucher:", err);
+            console.error('Error saving voucher:', err.message);
             setRewardMessage("Lỗi khi lưu voucher. Vui lòng liên hệ CSKH.");
         }
     };

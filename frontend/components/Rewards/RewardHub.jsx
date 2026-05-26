@@ -6,19 +6,23 @@ import './RewardHub.css';
 import DailyCheckIn from './DailyCheckIn';
 import { Gamepad2, User } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { supabase } from '../../services/supabaseClient';
+import { get } from '../../services/http';
 
 const RewardHub = () => {
     const { user } = useAuth();
     const [points, setPoints] = useState(0);
     const navigate = useNavigate();
 
-    // Fetch real points if user exists (Quick inline effect)
     React.useEffect(() => {
         const fetchPoints = async () => {
-            if (user) {
-                const { data } = await supabase.from('profiles').select('points').eq('id', user.id).single();
-                if (data) setPoints(data.points);
+            if (user?.id) {
+                try {
+                    const data = await get(`/users/${user.id}`);
+                    if (data) setPoints(data.points || 0);
+                } catch (err) {
+                    console.error('Error loading points:', err.message);
+                    setPoints(0);
+                }
             } else {
                 setPoints(0);
             }
@@ -45,9 +49,7 @@ const RewardHub = () => {
 
     return (
         <div className="reward-hub-container">
-            {/* 1. Header Section */}
             <div className="reward-header">
-                {/* ... keep header ... */}
                 <div className="reward-user-info">
                     <div>
                         <div className="accumulated-label">Xu tích lũy</div>
@@ -78,12 +80,9 @@ const RewardHub = () => {
                 </div>
             </div>
 
-            {/* 2. Main Content */}
             <div className="reward-content">
-                {/* Check-in Strip */}
                 <DailyCheckIn onPointUpdate={(addedPoints) => setPoints(prev => prev + addedPoints)} />
 
-                {/* Game Grid */}
                 <div className="games-section">
                     <div className="section-title">
                         <Gamepad2 />
@@ -91,7 +90,6 @@ const RewardHub = () => {
                     </div>
 
                     <div className="games-grid">
-                        {/* Game 1: Rắn Săn Mồi */}
                         <div className="game-card bg-green">
                             <div className="game-icon">🐍</div>
                             <div className="game-name">Rắn Săn Mồi</div>
@@ -99,7 +97,6 @@ const RewardHub = () => {
                             <button className="play-btn" onClick={() => handlePlayGame("Rắn Săn Mồi")}>Chơi ngay</button>
                         </div>
 
-                        {/* Game 2: Ghép Giày */}
                         <div className="game-card bg-yellow">
                             <div className="game-icon">🧩</div>
                             <div className="game-name">Ghép Giày Đôi</div>
@@ -107,7 +104,6 @@ const RewardHub = () => {
                             <button className="play-btn" onClick={() => handlePlayGame("Ghép Giày")}>Chơi ngay</button>
                         </div>
 
-                        {/* Game 3: Vòng Quay */}
                         <div className="game-card bg-purple">
                             <div className="game-icon">🎡</div>
                             <div className="game-name">Vòng Quay May Mắn</div>
@@ -115,7 +111,6 @@ const RewardHub = () => {
                             <button className="play-btn" onClick={() => handlePlayGame("Vòng Quay")}>Quay ngay</button>
                         </div>
 
-                        {/* Game 4: Tetris */}
                         <div className="game-card bg-blue">
                             <div className="game-icon">🧱</div>
                             <div className="game-name">Xếp Gạch</div>

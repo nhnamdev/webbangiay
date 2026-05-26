@@ -1,51 +1,77 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ZestFoot — React + Spring Boot + MySQL
 
-## Getting Started
+Vite/React SPA gọi REST API tới Spring Boot 3, dữ liệu lưu trên MySQL. Không còn phụ thuộc Supabase.
 
-First, run the development server:
+## Stack
+
+- Frontend: React 19 + Vite (`frontend/`)
+- Backend: Spring Boot 3 + Spring Data JPA + BCrypt (`backend/`)
+- Database: MySQL 8 (đã sẵn trên VPS)
+
+## Chạy local
+
+### Backend
 
 ```bash
+cd backend
+mvn spring-boot:run
+```
+
+Mặc định lắng nghe ở `http://localhost:8080`. Cấu hình MySQL trong `backend/src/main/resources/application.properties` (hoặc override bằng env `SPRING_DATASOURCE_*`).
+
+### Frontend
+
+```bash
+cd frontend
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Vite dev server proxy `/api` sang `http://localhost:8080`. Hoặc set biến môi trường `VITE_API_URL` để trỏ thẳng tới BE.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Biến môi trường
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Environment Variables
-
-Required variables for product/blog/auth data:
+Xem `.env.example`. Tóm tắt:
 
 ```bash
-NEXT_PUBLIC_SUPABASE_URL=...
-NEXT_PUBLIC_SUPABASE_ANON_KEY=...
-OPENAI_API_KEY=...
-OPENAI_CHAT_MODEL=gpt-4o-mini
-OPENAI_EMBEDDING_MODEL=text-embedding-3-small
-NEXT_PUBLIC_GEMINI_API_KEY=... # chi can cho tinh nang AI Try-On
+SPRING_DATASOURCE_URL=jdbc:mysql://<host>:3306/zestfootdb?useSSL=false&serverTimezone=UTC
+SPRING_DATASOURCE_USERNAME=...
+SPRING_DATASOURCE_PASSWORD=...
+SPRING_JPA_HIBERNATE_DDL_AUTO=update
+
+VITE_API_URL=http://localhost:8080/api
+
+# Optional cho AI chatbot
+VITE_OPENAI_API_KEY=
+VITE_GEMINI_API_KEY=
 ```
 
-When deploying to Vercel, add these in Project Settings -> Environment Variables for both Preview and Production.
+## Cấp quyền admin
 
-## Learn More
+Sau khi `POST /api/auth/register`, sửa role qua MySQL hoặc gọi admin API:
 
-To learn more about Next.js, take a look at the following resources:
+```sql
+UPDATE users SET role = 'ADMIN' WHERE email = 'admin@example.com';
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## REST endpoints chính
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Tài nguyên | Endpoint |
+|---|---|
+| Auth | `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/logout` |
+| Products | `GET/POST/PUT/DELETE /api/products`, query `?isNew=&isSale=&isTrending=&brand=` |
+| Brands | `GET/POST/PUT/DELETE /api/brands` |
+| News | `GET/POST/PUT/DELETE /api/news` |
+| Orders | `GET/POST/PUT/DELETE /api/orders`, `PUT /api/orders/{id}/status`, `GET /api/orders/by-email?email=` |
+| Users | `GET /api/users?search=&page=&size=`, `GET/PUT/DELETE /api/users/{id}` |
+| Coupons | `GET /api/coupons`, `POST /api/coupons/validate`, `POST /api/coupons/mark-used` |
+| Vouchers | `GET /api/vouchers`, `GET /api/vouchers/user/{userId}`, `POST/PUT/DELETE /api/vouchers/{id}` |
+| Points | `GET /api/points/user/{userId}/transactions`, `POST /api/points/user/{userId}` |
 
-## Deploy on Vercel
+## Docker Compose
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+docker compose up -d --build
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Frontend serve build tĩnh bằng `serve` (Node) trên port 80. Browser gọi REST trực tiếp tới backend qua `VITE_API_URL` đã baked-in lúc build (set qua env hoặc Coolify panel).

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import './LuckyWheel.css';
-import { supabase } from '../../services/supabaseClient';
+import { get, post, put } from '../../services/http';
 import { useAuth } from '../../context/AuthContext';
 import { X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -16,7 +16,7 @@ const PRIZES = [
     { id: 6, name: "Chúc may mắn", weight: 55.9, color: '#FF9800', value: 0 }
 ];
 
-const LuckyWheel = ({ onClose, onSpinComplete }) => {
+const LuckyWheel = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
     const [spinning, setSpinning] = useState(false);
@@ -30,29 +30,22 @@ const LuckyWheel = ({ onClose, onSpinComplete }) => {
     }, [user]);
 
     const checkEligibility = async () => {
-        if (!user) return;
+        if (!user?.id) return;
         setLoading(true);
         try {
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('last_lucky_spin, spin_tickets')
-                .eq('id', user.id)
-                .single();
-
-            if (error) throw error;
-
-            const lastSpin = data.last_lucky_spin ? new Date(data.last_lucky_spin).toDateString() : null;
+            const data = await get(`/users/${user.id}`);
+            const lastSpin = data.lastLuckySpin ? new Date(data.lastLuckySpin).toDateString() : null;
             const today = new Date().toDateString();
 
             if (lastSpin !== today) {
                 setCanSpin(true);
                 setMessage("Bạn có 1 lượt quay miễn phí hôm nay!");
-            } else if (data.spin_tickets > 0) {
+            } else if ((data.spinTickets || 0) > 0) {
                 setCanSpin(true);
-                setMessage(`Bạn còn ${data.spin_tickets} vé quay thêm.`);
+                setMessage(`Bạn còn ${data.spinTickets} vé quay thêm.`);
             }
         } catch (err) {
-            console.error("Error checking spin status:", err);
+            console.error('Error checking spin status:', err.message);
         } finally {
             setLoading(false);
         }
@@ -61,7 +54,7 @@ const LuckyWheel = ({ onClose, onSpinComplete }) => {
     const getPrize = () => {
         const random = Math.random() * 100;
         let sum = 0;
-        for (let prize of PRIZES) {
+        for (const prize of PRIZES) {
             sum += prize.weight;
             if (random <= sum) return prize;
         }
@@ -70,58 +63,44 @@ const LuckyWheel = ({ onClose, onSpinComplete }) => {
 
     const processReward = async (prize) => {
         try {
-            const updates = { last_lucky_spin: new Date().toISOString() };
-            // Add Reward Logic
-            if (typeof prize.value === 'number') {
-                const { data: profile } = await supabase.from('profiles').select('points').eq('id', user.id).single();
-                updates.points = (profile?.points || 0) + prize.value;
-
-                await supabase.from('point_transactions').insert({
-                    user_id: user.id,
+            if (typeof prize.value === 'number' && prize.value > 0) {
+                await post(`/points/user/${user.id}`, {
+                    type: 'earn',
                     amount: prize.value,
                     reason: `Trúng thưởng Lucky Wheel: ${prize.name}`,
-                    type: 'earn'
                 });
-            } else if (prize.value.startsWith('VOUCHER')) {
-                // Generate simple code
+            } else if (typeof prize.value === 'string' && prize.value.startsWith('VOUCHER')) {
                 const code = `WHEEL-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
                 const amount = prize.value === 'VOUCHER_500' ? 500000 : 50000;
 
-                // Insert Voucher
-                await supabase.from('user_vouchers').insert({
-                    user_id: user.id,
-                    code: code,
-                    discount_amount: amount,
-                    min_order_value: 0,
-                    status: 'active'
+                await post('/vouchers', {
+                    userId: user.id,
+                    code,
+                    discountAmount: amount,
+                    minOrderValue: 0,
+                    status: 'active',
                 });
 
                 alert(`Bạn nhận được mã: ${code}`);
             }
 
-            await supabase.from('profiles').update(updates).eq('id', user.id);
+            await put(`/users/${user.id}`, { lastLuckySpin: new Date().toISOString() });
 
-            // Notify global listener
             window.dispatchEvent(new Event('pointsUpdated'));
-
             checkEligibility();
-
         } catch (error) {
-            console.error("Error processing reward:", error);
+            console.error('Error processing reward:', error.message);
         }
     };
 
     const handleSpin = async () => {
-        if (!canSpin || spinning || !user) return;
+        if (!canSpin || spinning || !user?.id) return;
         setSpinning(true);
 
         const prize = getPrize();
         const prizeIndex = PRIZES.findIndex(p => p.id === prize.id);
         const segmentAngle = 360 / PRIZES.length;
 
-        // Correct rotation calc for 0-60 degrees at top (with +30 offset for label)
-        // If index 0 is at 0-60 deg. 
-        // We want accurate animation so let's stick to standard logic:
         const targetRotation = 360 * 6 + (360 - (prizeIndex * segmentAngle) - segmentAngle / 2);
         const finalRotation = rotation + targetRotation;
 
@@ -130,9 +109,7 @@ const LuckyWheel = ({ onClose, onSpinComplete }) => {
         setTimeout(async () => {
             await processReward(prize);
             setSpinning(false);
-            // Infinite spin mode: do not disable canSpin
             alert(`Chúc mừng! Bạn quay vào: ${prize.name}`);
-            if (onSpinComplete) onSpinComplete();
         }, 4000);
     };
 
@@ -153,7 +130,6 @@ const LuckyWheel = ({ onClose, onSpinComplete }) => {
                             <div
                                 key={p.id}
                                 className="wheel-label"
-                                // Correct rotation: -60 deg offset to align indices
                                 style={{ transform: `rotate(${i * 60 - 60}deg)` }}
                             >
                                 {p.name}
@@ -175,5 +151,3 @@ const LuckyWheel = ({ onClose, onSpinComplete }) => {
 };
 
 export default LuckyWheel;
-
-// fix bug vong quay quay mai khong dung

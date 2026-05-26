@@ -1,6 +1,6 @@
-﻿
+
 import { useEffect, useState, useCallback } from "react";
-import { supabaseAdmin } from "../../supabaseClient";
+import { get, post, put as putReq } from "../../../../services/http";
 
 const PAGE_SIZE = 15;
 
@@ -12,43 +12,60 @@ export default function VouchersAdmin() {
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(false);
   const [form, setForm] = useState({
-    user_id: "", code: "", discount_amount: 50000, min_order_value: 0, status: "active", expires_at: ""
+    userId: "", code: "", discountAmount: 50000, minOrderValue: 0, status: "active", expiresAt: ""
   });
   const [saving, setSaving] = useState(false);
   const [alert, setAlert] = useState<{ type: "success" | "error"; msg: string } | null>(null);
 
-  const fetch = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
-    let q = supabaseAdmin.from("user_vouchers").select("*, profiles(full_name)", { count: "exact" });
-    if (filterStatus) q = q.eq("status", filterStatus);
-    const { data, count } = await q.order("created_at", { ascending: false }).range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
-    setVouchers(data || []);
-    setTotal(count || 0);
-    setLoading(false);
+    try {
+      const all: any[] = await get("/vouchers");
+      let list = all;
+      if (filterStatus) list = list.filter(v => v.status === filterStatus);
+      list.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+      setTotal(list.length);
+      setVouchers(list.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE));
+    } finally {
+      setLoading(false);
+    }
   }, [filterStatus, page]);
 
-  useEffect(() => { fetch(); }, [fetch]);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
   const save = async () => {
-    if (!form.user_id || !form.code) return;
+    if (!form.userId || !form.code) return;
     setSaving(true);
-    const { error } = await supabaseAdmin.from("user_vouchers").insert([{
-      user_id: form.user_id,
-      code: form.code,
-      discount_amount: form.discount_amount,
-      min_order_value: form.min_order_value,
-      status: form.status,
-      expires_at: form.expires_at || null,
-    }]);
-    setSaving(false);
-    if (error) setAlert({ type: "error", msg: error.message });
-    else { setAlert({ type: "success", msg: "Đã tặng voucher!" }); setModal(false); fetch(); }
-    setTimeout(() => setAlert(null), 3000);
+    try {
+      await post("/vouchers", {
+        userId: Number(form.userId),
+        code: form.code,
+        discountAmount: form.discountAmount,
+        minOrderValue: form.minOrderValue,
+        status: form.status,
+        expiresAt: form.expiresAt || null,
+      });
+      setAlert({ type: "success", msg: "Đã tặng voucher!" });
+      setModal(false);
+      fetchData();
+    } catch (e: any) {
+      setAlert({ type: "error", msg: e?.message || "Lỗi" });
+    } finally {
+      setSaving(false);
+      setTimeout(() => setAlert(null), 3000);
+    }
   };
 
   const updateStatus = async (id: number, status: string) => {
-    await supabaseAdmin.from("user_vouchers").update({ status }).eq("id", id);
-    setVouchers(vs => vs.map(v => v.id === id ? { ...v, status } : v));
+    try {
+      const target = vouchers.find(v => v.id === id);
+      if (!target) return;
+      await putReq(`/vouchers/${id}`, { ...target, status });
+      setVouchers(vs => vs.map(v => v.id === id ? { ...v, status } : v));
+    } catch (e: any) {
+      setAlert({ type: "error", msg: e?.message || "Lỗi" });
+      setTimeout(() => setAlert(null), 3000);
+    }
   };
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
@@ -56,7 +73,6 @@ export default function VouchersAdmin() {
 
   const statusBadge = (s: string) =>
     s === "active" ? "badge-success" : s === "used" ? "badge-warning" : "badge-gray";
-
   const statusLabel = (s: string) =>
     s === "active" ? "Hoạt động" : s === "used" ? "Đã dùng" : s === "expired" ? "Hết hạn" : s;
 
@@ -95,7 +111,7 @@ export default function VouchersAdmin() {
             <thead>
               <tr>
                 <th>ID</th>
-                <th>Người dùng</th>
+                <th>User ID</th>
                 <th>Mã voucher</th>
                 <th>Giảm giá</th>
                 <th>Đơn tối thiểu</th>
@@ -108,12 +124,12 @@ export default function VouchersAdmin() {
               {vouchers.map(v => (
                 <tr key={v.id}>
                   <td>#{v.id}</td>
-                  <td style={{ color: "#cbd5e1" }}>{(v.profiles as any)?.full_name || v.user_id?.substring(0, 8) + "..."}</td>
+                  <td style={{ color: "#cbd5e1" }}>#{v.userId}</td>
                   <td><span style={{ fontFamily: "monospace", color: "#818cf8", fontWeight: 700 }}>{v.code}</span></td>
-                  <td style={{ color: "#34d399", fontWeight: 600 }}>{v.discount_amount?.toLocaleString()}₫</td>
-                  <td>{v.min_order_value ? v.min_order_value.toLocaleString() + "₫" : "—"}</td>
+                  <td style={{ color: "#34d399", fontWeight: 600 }}>{(v.discountAmount || 0).toLocaleString()}₫</td>
+                  <td>{v.minOrderValue ? v.minOrderValue.toLocaleString() + "₫" : "—"}</td>
                   <td style={{ color: "#64748b", fontSize: 13 }}>
-                    {v.expires_at ? new Date(v.expires_at).toLocaleDateString("vi-VN") : "Không hạn"}
+                    {v.expiresAt ? new Date(v.expiresAt).toLocaleDateString("vi-VN") : "Không hạn"}
                   </td>
                   <td>
                     <span className={`badge ${statusBadge(v.status)}`}>{statusLabel(v.status)}</span>
@@ -157,8 +173,8 @@ export default function VouchersAdmin() {
             <div className="modal-body">
               <div className="form-grid cols-1">
                 <div className="form-group">
-                  <label className="form-label">UUID người dùng *</label>
-                  <input className="form-control" value={form.user_id} onChange={e => f("user_id", e.target.value)} placeholder="UUID từ bảng profiles..." />
+                  <label className="form-label">ID người dùng *</label>
+                  <input className="form-control" value={form.userId} onChange={e => f("userId", e.target.value)} placeholder="VD: 12" />
                 </div>
                 <div className="form-group">
                   <label className="form-label">Mã voucher *</label>
@@ -166,15 +182,15 @@ export default function VouchersAdmin() {
                 </div>
                 <div className="form-group">
                   <label className="form-label">Số tiền giảm (₫)</label>
-                  <input className="form-control" type="number" value={form.discount_amount} onChange={e => f("discount_amount", Number(e.target.value))} />
+                  <input className="form-control" type="number" value={form.discountAmount} onChange={e => f("discountAmount", Number(e.target.value))} />
                 </div>
                 <div className="form-group">
                   <label className="form-label">Đơn tối thiểu (₫)</label>
-                  <input className="form-control" type="number" value={form.min_order_value} onChange={e => f("min_order_value", Number(e.target.value))} />
+                  <input className="form-control" type="number" value={form.minOrderValue} onChange={e => f("minOrderValue", Number(e.target.value))} />
                 </div>
                 <div className="form-group">
                   <label className="form-label">Hết hạn</label>
-                  <input className="form-control" type="datetime-local" value={form.expires_at} onChange={e => f("expires_at", e.target.value)} />
+                  <input className="form-control" type="datetime-local" value={form.expiresAt} onChange={e => f("expiresAt", e.target.value)} />
                 </div>
               </div>
             </div>

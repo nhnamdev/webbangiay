@@ -1,6 +1,6 @@
-﻿
+
 import { useEffect, useState } from "react";
-import { supabaseAdmin } from "../supabaseClient";
+import { get } from "../../../services/http";
 
 interface Stats {
   products: number;
@@ -12,8 +12,6 @@ interface Stats {
   revenue: number;
   pending: number;
 }
-
-const recentOrderStatuses = ["pending", "processing", "shipped", "delivered", "cancelled"];
 
 function getStatusBadge(status: string) {
   const map: Record<string, string> = {
@@ -37,6 +35,12 @@ function getStatusLabel(status: string) {
   return map[status] || status;
 }
 
+const parseCustomer = (raw: any) => {
+  if (!raw) return null;
+  if (typeof raw === "object") return raw;
+  try { return JSON.parse(raw); } catch { return null; }
+};
+
 export default function AdminDashboard() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [recentOrders, setRecentOrders] = useState<any[]>([]);
@@ -44,44 +48,39 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     async function fetchAll() {
-      const [
-        { count: products },
-        { count: brands },
-        { count: orders },
-        { count: users },
-        { count: coupons },
-        { count: news },
-        { data: ordersData },
-        { data: recentOrdersData },
-      ] = await Promise.all([
-        supabaseAdmin.from("products").select("*", { count: "exact", head: true }),
-        supabaseAdmin.from("brands").select("*", { count: "exact", head: true }),
-        supabaseAdmin.from("orders").select("*", { count: "exact", head: true }),
-        supabaseAdmin.from("profiles").select("*", { count: "exact", head: true }),
-        supabaseAdmin.from("coupons").select("*", { count: "exact", head: true }),
-        supabaseAdmin.from("news").select("*", { count: "exact", head: true }),
-        supabaseAdmin.from("orders").select("total_amount, status"),
-        supabaseAdmin.from("orders").select("*").order("created_at", { ascending: false }).limit(5),
-      ]);
+      try {
+        const [products, brands, orders, usersResp, coupons, news] = await Promise.all([
+          get("/products"),
+          get("/brands"),
+          get("/orders"),
+          get("/users", { params: { page: 1, size: 1 } }),
+          get("/coupons"),
+          get("/news"),
+        ]);
 
-      const revenue = (ordersData || [])
-        .filter((o: any) => o.status === "delivered")
-        .reduce((sum: number, o: any) => sum + (Number(o.total_amount) || 0), 0);
+        const revenue = (orders || [])
+          .filter((o: any) => o.status === "delivered")
+          .reduce((sum: number, o: any) => sum + (Number(o.totalAmount) || 0), 0);
+        const pending = (orders || []).filter((o: any) => o.status === "pending").length;
 
-      const pending = (ordersData || []).filter((o: any) => o.status === "pending").length;
+        setStats({
+          products: products?.length || 0,
+          brands: brands?.length || 0,
+          orders: orders?.length || 0,
+          users: usersResp?.total || 0,
+          coupons: coupons?.length || 0,
+          news: news?.length || 0,
+          revenue,
+          pending,
+        });
 
-      setStats({
-        products: products || 0,
-        brands: brands || 0,
-        orders: orders || 0,
-        users: users || 0,
-        coupons: coupons || 0,
-        news: news || 0,
-        revenue,
-        pending,
-      });
-      setRecentOrders(recentOrdersData || []);
-      setLoading(false);
+        const sorted = [...(orders || [])].sort((a: any, b: any) =>
+          new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+        );
+        setRecentOrders(sorted.slice(0, 5));
+      } finally {
+        setLoading(false);
+      }
     }
     fetchAll();
   }, []);
@@ -154,7 +153,6 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Recent Orders */}
       <div className="admin-table-wrapper">
         <div className="table-toolbar">
           <span style={{ fontWeight: 600, color: "#e2e8f0" }}>Đơn hàng gần đây</span>
@@ -177,24 +175,27 @@ export default function AdminDashboard() {
               </tr>
             </thead>
             <tbody>
-              {recentOrders.map((order) => (
-                <tr key={order.id}>
-                  <td>#{order.id}</td>
-                  <td>{order.customer?.name || order.customer?.fullName || "—"}</td>
-                  <td>{formatCurrency(Number(order.total_amount) || 0)}</td>
-                  <td>{order.payment_method || "—"}</td>
-                  <td>
-                    <span className={`badge ${getStatusBadge(order.status)}`}>
-                      {getStatusLabel(order.status)}
-                    </span>
-                  </td>
-                  <td>
-                    {order.created_at
-                      ? new Date(order.created_at).toLocaleDateString("vi-VN")
-                      : "—"}
-                  </td>
-                </tr>
-              ))}
+              {recentOrders.map((order) => {
+                const c = parseCustomer(order.customerJson);
+                return (
+                  <tr key={order.id}>
+                    <td>#{order.id}</td>
+                    <td>{c?.name || c?.fullName || order.email || "—"}</td>
+                    <td>{formatCurrency(Number(order.totalAmount) || 0)}</td>
+                    <td>{order.paymentMethod || "—"}</td>
+                    <td>
+                      <span className={`badge ${getStatusBadge(order.status)}`}>
+                        {getStatusLabel(order.status)}
+                      </span>
+                    </td>
+                    <td>
+                      {order.createdAt
+                        ? new Date(order.createdAt).toLocaleDateString("vi-VN")
+                        : "—"}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}

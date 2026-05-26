@@ -1,6 +1,6 @@
-﻿
+
 import { useEffect, useState, useCallback } from "react";
-import { supabaseAdmin } from "../../supabaseClient";
+import { get, post, put as putReq, del } from "../../../../services/http";
 
 interface Product {
   id: number;
@@ -47,19 +47,22 @@ export default function ProductsAdmin() {
   const [saving, setSaving] = useState(false);
   const [alert, setAlert] = useState<{ type: "success" | "error"; msg: string } | null>(null);
 
-  const fetch = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
-    let query = supabaseAdmin.from("products").select("*", { count: "exact" });
-    if (search) query = query.ilike("name", `%${search}%`);
-    const { data, count } = await query
-      .order("id", { ascending: false })
-      .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
-    setProducts(data || []);
-    setTotal(count || 0);
-    setLoading(false);
+    try {
+      const all: Product[] = await get("/products");
+      const filtered = search
+        ? all.filter(p => (p.name || "").toLowerCase().includes(search.toLowerCase()))
+        : all;
+      filtered.sort((a, b) => b.id - a.id);
+      setTotal(filtered.length);
+      setProducts(filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE));
+    } finally {
+      setLoading(false);
+    }
   }, [search, page]);
 
-  useEffect(() => { fetch(); }, [fetch]);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
   const openCreate = () => { setForm(EMPTY); setModal("create"); setEditId(null); };
   const openEdit = (p: Product) => { setForm({ ...p }); setModal("edit"); setEditId(p.id); };
@@ -68,23 +71,32 @@ export default function ProductsAdmin() {
   const save = async () => {
     if (!form.name) return;
     setSaving(true);
-    let err;
-    if (modal === "create") {
-      ({ error: err } = await supabaseAdmin.from("products").insert([form]));
-    } else {
-      ({ error: err } = await supabaseAdmin.from("products").update(form).eq("id", editId!));
+    try {
+      if (modal === "create") {
+        await post("/products", form);
+      } else {
+        await putReq(`/products/${editId}`, form);
+      }
+      setAlert({ type: "success", msg: modal === "create" ? "Đã thêm sản phẩm!" : "Đã cập nhật!" });
+      closeModal();
+      fetchData();
+    } catch (e: any) {
+      setAlert({ type: "error", msg: e?.message || "Lỗi" });
+    } finally {
+      setSaving(false);
+      setTimeout(() => setAlert(null), 3000);
     }
-    setSaving(false);
-    if (err) { setAlert({ type: "error", msg: err.message }); }
-    else { setAlert({ type: "success", msg: modal === "create" ? "Đã thêm sản phẩm!" : "Đã cập nhật!" }); closeModal(); fetch(); }
-    setTimeout(() => setAlert(null), 3000);
   };
 
   const remove = async (id: number) => {
     if (!confirm("Xóa sản phẩm này?")) return;
-    const { error } = await supabaseAdmin.from("products").delete().eq("id", id);
-    if (error) setAlert({ type: "error", msg: error.message });
-    else { setAlert({ type: "success", msg: "Đã xóa sản phẩm" }); fetch(); }
+    try {
+      await del(`/products/${id}`);
+      setAlert({ type: "success", msg: "Đã xóa sản phẩm" });
+      fetchData();
+    } catch (e: any) {
+      setAlert({ type: "error", msg: e?.message || "Lỗi" });
+    }
     setTimeout(() => setAlert(null), 3000);
   };
 
@@ -189,7 +201,6 @@ export default function ProductsAdmin() {
         )}
       </div>
 
-      {/* Modal */}
       {modal && (
         <div className="modal-backdrop" onClick={closeModal}>
           <div className="modal" onClick={e => e.stopPropagation()}>

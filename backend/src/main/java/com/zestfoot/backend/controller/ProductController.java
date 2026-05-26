@@ -16,7 +16,15 @@ public class ProductController {
     private ProductRepository productRepository;
 
     @GetMapping
-    public List<Product> getAllProducts() {
+    public List<Product> getAllProducts(
+            @RequestParam(required = false) Boolean isNew,
+            @RequestParam(required = false) Boolean isSale,
+            @RequestParam(required = false) Boolean isTrending,
+            @RequestParam(required = false) String brand) {
+        if (Boolean.TRUE.equals(isNew)) return productRepository.findByIsNewTrue();
+        if (Boolean.TRUE.equals(isSale)) return productRepository.findByIsSaleTrue();
+        if (Boolean.TRUE.equals(isTrending)) return productRepository.findByIsTrendingTrue();
+        if (brand != null && !brand.isBlank()) return productRepository.findByBrandIgnoreCase(brand);
         return productRepository.findAll();
     }
 
@@ -25,5 +33,25 @@ public class ProductController {
         return productRepository.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping
+    public Product create(@RequestBody Product product) {
+        return productRepository.save(product);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Product> update(@PathVariable Long id, @RequestBody Product product) {
+        return productRepository.findById(id).map(existing -> {
+            product.setId(existing.getId());
+            return ResponseEntity.ok(productRepository.save(product));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        if (!productRepository.existsById(id)) return ResponseEntity.notFound().build();
+        productRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 }

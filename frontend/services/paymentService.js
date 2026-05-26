@@ -1,9 +1,7 @@
-import { supabase } from './supabaseClient';
+import { post } from './http';
 
-// Simulate API delay
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Hàm helper tạo chuỗi ngẫu nhiên (giả lập mã giao dịch)
 const generateRandomString = (length) => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     let result = '';
@@ -16,55 +14,39 @@ const generateRandomString = (length) => {
 export const processPayment = async (orderData, method) => {
     await delay(1500);
 
-    // 1. Giả lập xác suất lỗi (Demo thì comment lại)
-    let status = 'pending'; // Mặc định
+    let status = 'pending';
     let paymentStatus = 'unpaid';
 
-    // Logic giả lập phản hồi từ cổng thanh toán
     if (method === 'cod') {
-        status = 'pending'; // Đơn hàng tạo xong, chờ giao
+        status = 'pending';
         paymentStatus = 'cod_pending';
-    }
-    else if (method === 'momo' || method === 'vnpay') {
-        // Giả sử callback trả về thành công
-        status = 'processing'; // Đang xử lý đóng gói
+    } else if (method === 'momo' || method === 'vnpay') {
+        status = 'processing';
         paymentStatus = 'paid';
     }
 
-    // Tạo mã giao dịch giả cho đẹp
-    const transactionId = method === 'vnpay' ? `VNP${generateRandomString(8)}` : (method === 'momo' ? `MOMO${generateRandomString(10)}` : null);
+    const transactionId = method === 'vnpay'
+        ? `VNP${generateRandomString(8)}`
+        : (method === 'momo' ? `MOMO${generateRandomString(10)}` : null);
 
-    // Chuẩn bị dữ liệu order để lưu vào Supabase
     const newOrder = {
-        ...orderData, // customer, items, sub_total, shipping_fee, total_amount...
-        status: status, // pending | processing
-        payment_method: method, // cod | momo | vnpay
-
-        payment_info: {
-            method: method,
+        ...orderData,
+        status,
+        paymentMethod: method,
+        email: orderData?.customer?.email || orderData?.email,
+        customerJson: orderData?.customer ? JSON.stringify(orderData.customer) : null,
+        paymentInfoJson: JSON.stringify({
+            method,
             status: paymentStatus,
             transaction_id: transactionId,
-            paid_at: method !== 'cod' ? new Date().toISOString() : null
-        }
+            paid_at: method !== 'cod' ? new Date().toISOString() : null,
+        }),
     };
 
-
     try {
-        console.log("Saving order to Supabase...");
-
-        const { data, error } = await supabase
-            .from('orders')
-            .insert(newOrder)
-            .select() // Trả về dòng vừa insert
-            .single();
-
-        if (error) {
-            throw new Error(`Supabase Error: ${error.message}`);
-        }
-
-        return data;
+        return await post('/orders', newOrder);
     } catch (error) {
-        console.error("Payment Service Error:", error);
+        console.error('Payment Service Error:', error.message);
         throw error;
     }
 };

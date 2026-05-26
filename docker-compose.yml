@@ -1,0 +1,51 @@
+# Coolify (hoặc bất kỳ host nào chạy docker compose) đọc file này để deploy stack.
+# Set các env trong Coolify "Environment Variables" panel.
+#
+# Frontend phục vụ static build qua `serve` (Node) trên port 80.
+# Browser gọi REST trực tiếp tới backend qua URL trong VITE_API_URL
+# (đã baked-in lúc `npm run build`). Đặt VITE_API_URL là URL công khai
+# của backend, ví dụ https://api.zestfoot.example/api.
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: zestfoot-backend:latest
+    container_name: zestfoot-backend
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: ${SPRING_JPA_HIBERNATE_DDL_AUTO:-update}
+      SERVER_PORT: 8080
+      JAVA_OPTS: ${JAVA_OPTS:--XX:MaxRAMPercentage=75.0}
+    ports:
+      - "8080:8080"
+    # If MySQL runs on the VPS host (not in a container), uncomment so the
+    # container can resolve the host's network namespace as "host.docker.internal":
+    # extra_hosts:
+    #   - "host.docker.internal:host-gateway"
+    networks:
+      - zestfoot
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL}
+    image: zestfoot-frontend:latest
+    container_name: zestfoot-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+    networks:
+      - zestfoot
+
+networks:
+  zestfoot:
+    driver: bridge

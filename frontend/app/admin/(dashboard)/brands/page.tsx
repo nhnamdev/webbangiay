@@ -1,6 +1,6 @@
-﻿
+
 import { useEffect, useState, useCallback } from "react";
-import { supabaseAdmin } from "../../supabaseClient";
+import { get, post, put as putReq, del } from "../../../../services/http";
 
 interface Brand { id: number; name: string; logo: string | null; slug: string | null; }
 
@@ -16,16 +16,21 @@ export default function BrandsAdmin() {
   const [saving, setSaving] = useState(false);
   const [alert, setAlert] = useState<{ type: "success" | "error"; msg: string } | null>(null);
 
-  const fetch = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
-    let q = supabaseAdmin.from("brands").select("*");
-    if (search) q = q.ilike("name", `%${search}%`);
-    const { data } = await q.order("name");
-    setBrands(data || []);
-    setLoading(false);
+    try {
+      const all: Brand[] = await get("/brands");
+      const filtered = search
+        ? all.filter(b => (b.name || "").toLowerCase().includes(search.toLowerCase()))
+        : all;
+      filtered.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+      setBrands(filtered);
+    } finally {
+      setLoading(false);
+    }
   }, [search]);
 
-  useEffect(() => { fetch(); }, [fetch]);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
   const openCreate = () => { setForm(EMPTY); setModal("create"); setEditId(null); };
   const openEdit = (b: Brand) => { setForm({ name: b.name, logo: b.logo, slug: b.slug }); setModal("edit"); setEditId(b.id); };
@@ -34,23 +39,32 @@ export default function BrandsAdmin() {
   const save = async () => {
     if (!form.name) return;
     setSaving(true);
-    let err;
-    if (modal === "create") {
-      ({ error: err } = await supabaseAdmin.from("brands").insert([form]));
-    } else {
-      ({ error: err } = await supabaseAdmin.from("brands").update(form).eq("id", editId!));
+    try {
+      if (modal === "create") {
+        await post("/brands", form);
+      } else {
+        await putReq(`/brands/${editId}`, form);
+      }
+      setAlert({ type: "success", msg: modal === "create" ? "Đã thêm thương hiệu!" : "Đã cập nhật!" });
+      closeModal();
+      fetchData();
+    } catch (e: any) {
+      setAlert({ type: "error", msg: e?.message || "Lỗi" });
+    } finally {
+      setSaving(false);
+      setTimeout(() => setAlert(null), 3000);
     }
-    setSaving(false);
-    if (err) setAlert({ type: "error", msg: err.message });
-    else { setAlert({ type: "success", msg: modal === "create" ? "Đã thêm thương hiệu!" : "Đã cập nhật!" }); closeModal(); fetch(); }
-    setTimeout(() => setAlert(null), 3000);
   };
 
   const remove = async (id: number) => {
     if (!confirm("Xóa thương hiệu này?")) return;
-    const { error } = await supabaseAdmin.from("brands").delete().eq("id", id);
-    if (error) setAlert({ type: "error", msg: error.message });
-    else { setAlert({ type: "success", msg: "Đã xóa!" }); fetch(); }
+    try {
+      await del(`/brands/${id}`);
+      setAlert({ type: "success", msg: "Đã xóa!" });
+      fetchData();
+    } catch (e: any) {
+      setAlert({ type: "error", msg: e?.message || "Lỗi" });
+    }
     setTimeout(() => setAlert(null), 3000);
   };
 

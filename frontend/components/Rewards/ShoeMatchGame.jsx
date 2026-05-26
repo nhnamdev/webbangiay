@@ -5,7 +5,7 @@ import './ShoeMatchGame.css';
 import './GameOverlay.css';
 
 import { X, HelpCircle, Timer, Trophy } from 'lucide-react';
-import { supabase } from '../../services/supabaseClient';
+import { get, post } from '../../services/http';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -41,38 +41,33 @@ const ShoeMatchGame = ({ onClose }) => {
     }, [user]);
 
     const checkDailyLimit = async () => {
-        const { data, error } = await supabase
-            .from('point_transactions')
-            .select('created_at')
-            .eq('user_id', user.id)
-            .eq('reason', 'Play Shoe Match')
-            .gte('created_at', new Date(new Date().setHours(0, 0, 0, 0)).toISOString());
-
-        if (data && data.length > 0) {
-            setDailyPlaysLeft(0);
-        } else {
+        try {
+            const all = await get(`/points/user/${user.id}/transactions`);
+            const startOfDay = new Date(new Date().setHours(0, 0, 0, 0)).getTime();
+            const today = (all || []).filter(t =>
+                t.reason === 'Play Shoe Match' && new Date(t.createdAt).getTime() >= startOfDay
+            );
+            setDailyPlaysLeft(today.length > 0 ? 0 : 1);
+        } catch (err) {
+            console.error('Error checking daily limit:', err.message);
             setDailyPlaysLeft(1);
         }
         setLoading(false);
     };
 
     const fetchAndSetupGrid = async () => {
-        // Fetch products with valid images
-        const { data, error } = await supabase
-            .from('products')
-            .select('id, image')
-            .not('image', 'is', null) // Filter null
-            .neq('image', '') // Filter empty string
-            .limit(50); // Get more candidates
-
-        if (error || !data || data.length < 2) {
-            console.error("Error fetching products", error);
+        let data = [];
+        try {
+            const all = await get('/products');
+            data = (all || []).filter(p => p.image && p.image.length > 5).slice(0, 50);
+        } catch (err) {
+            console.error('Error fetching products', err.message);
             return;
         }
 
-        // Filter out potentially broken URLs if simple check possible?
-        // For now rely on DB constraints.
-        let validItems = data.filter(item => item.image && item.image.length > 5);
+        if (data.length < 2) return;
+
+        let validItems = data;
 
         if (validItems.length === 0) return;
 
@@ -115,11 +110,10 @@ const ShoeMatchGame = ({ onClose }) => {
         if (dailyPlaysLeft <= 0) return;
 
         // Deduct play
-        await supabase.from('point_transactions').insert({
-            user_id: user.id,
+        await post(`/points/user/${user.id}`, {
+            type: 'spend',
             amount: 0,
             reason: 'Play Shoe Match',
-            type: 'spend'
         });
         setDailyPlaysLeft(prev => prev - 1);
 
@@ -157,18 +151,18 @@ const ShoeMatchGame = ({ onClose }) => {
     const saveVoucher = async () => {
         const code = `MATCH50-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
         try {
-            await supabase.from('user_vouchers').insert({
-                user_id: user.id,
-                code: code,
-                discount_amount: 50000,
-                min_order_value: 200000,
+            await post('/vouchers', {
+                userId: user.id,
+                code,
+                discountAmount: 50000,
+                minOrderValue: 200000,
                 status: 'active',
-                expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+                expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
             });
             setRewardMessage(`Chúc mừng! Bạn nhận được Voucher 50k: ${code}`);
             window.dispatchEvent(new Event('pointsUpdated'));
         } catch (err) {
-            console.error(err);
+            console.error(err.message || err);
         }
     };
 

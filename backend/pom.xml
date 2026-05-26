@@ -6,13 +6,13 @@
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>3.2.5</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<relativePath/>
 	</parent>
 	<groupId>com.zestfoot</groupId>
 	<artifactId>backend</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>zestfoot-backend</name>
-	<description>Spring Boot Backend for ZestFoot connecting to Supabase</description>
+	<description>Spring Boot Backend for ZestFoot (MySQL)</description>
 	<properties>
 		<java.version>17</java.version>
 	</properties>
@@ -29,6 +29,10 @@
 			<groupId>com.mysql</groupId>
 			<artifactId>mysql-connector-j</artifactId>
 			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-crypto</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>

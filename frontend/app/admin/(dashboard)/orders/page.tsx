@@ -1,6 +1,6 @@
-﻿
+
 import { useEffect, useState, useCallback } from "react";
-import { supabaseAdmin } from "../../supabaseClient";
+import { get, put as putReq } from "../../../../services/http";
 
 const STATUS_MAP: Record<string, { label: string; badge: string }> = {
   pending:    { label: "Chờ xử lý",   badge: "badge-warning" },
@@ -12,6 +12,12 @@ const STATUS_MAP: Record<string, { label: string; badge: string }> = {
 
 const PAGE_SIZE = 10;
 
+const parseJSON = (raw: any) => {
+  if (!raw) return null;
+  if (typeof raw === "object") return raw;
+  try { return JSON.parse(raw); } catch { return null; }
+};
+
 export default function OrdersAdmin() {
   const [orders, setOrders] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
@@ -22,25 +28,30 @@ export default function OrdersAdmin() {
   const [detail, setDetail] = useState<any | null>(null);
   const [alert, setAlert] = useState<{ type: "success" | "error"; msg: string } | null>(null);
 
-  const fetch = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
-    let q = supabaseAdmin.from("orders").select("*", { count: "exact" });
-    if (filterStatus) q = q.eq("status", filterStatus);
-    const { data, count } = await q.order("created_at", { ascending: false }).range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
-    setOrders(data || []);
-    setTotal(count || 0);
-    setLoading(false);
+    try {
+      const all: any[] = await get("/orders");
+      let list = all;
+      if (filterStatus) list = list.filter(o => o.status === filterStatus);
+      list.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+      setTotal(list.length);
+      setOrders(list.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE));
+    } finally {
+      setLoading(false);
+    }
   }, [filterStatus, page]);
 
-  useEffect(() => { fetch(); }, [fetch]);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
   const updateStatus = async (id: number, status: string) => {
-    const { error } = await supabaseAdmin.from("orders").update({ status }).eq("id", id);
-    if (error) setAlert({ type: "error", msg: error.message });
-    else {
+    try {
+      await putReq(`/orders/${id}/status`, { status });
       setAlert({ type: "success", msg: "Đã cập nhật trạng thái!" });
       if (detail?.id === id) setDetail((d: any) => ({ ...d, status }));
-      fetch();
+      fetchData();
+    } catch (e: any) {
+      setAlert({ type: "error", msg: e?.message || "Lỗi" });
     }
     setTimeout(() => setAlert(null), 3000);
   };
@@ -100,27 +111,30 @@ export default function OrdersAdmin() {
             </thead>
             <tbody>
               {orders
-                .filter(o => !search || String(o.id).includes(search) || (o.customer?.name || "").toLowerCase().includes(search.toLowerCase()))
-                .map(o => (
-                  <tr key={o.id}>
-                    <td>#{o.id}</td>
-                    <td>{o.customer?.name || o.customer?.fullName || "—"}</td>
-                    <td>{o.customer?.phone || "—"}</td>
-                    <td style={{ color: "#818cf8", fontWeight: 600 }}>{fmt(o.total_amount)}</td>
-                    <td>{o.payment_method || "—"}</td>
-                    <td>
-                      <span className={`badge ${STATUS_MAP[o.status]?.badge || "badge-gray"}`}>
-                        {STATUS_MAP[o.status]?.label || o.status}
-                      </span>
-                    </td>
-                    <td>{o.created_at ? new Date(o.created_at).toLocaleDateString("vi-VN") : "—"}</td>
-                    <td>
-                      <div style={{ display: "flex", gap: 6 }}>
-                        <button className="btn btn-sm btn-secondary" onClick={() => setDetail(o)}>Chi tiết</button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                .filter(o => !search || String(o.id).includes(search))
+                .map(o => {
+                  const c = parseJSON(o.customerJson);
+                  return (
+                    <tr key={o.id}>
+                      <td>#{o.id}</td>
+                      <td>{c?.name || c?.fullName || o.email || "—"}</td>
+                      <td>{c?.phone || "—"}</td>
+                      <td style={{ color: "#818cf8", fontWeight: 600 }}>{fmt(o.totalAmount)}</td>
+                      <td>{o.paymentMethod || "—"}</td>
+                      <td>
+                        <span className={`badge ${STATUS_MAP[o.status]?.badge || "badge-gray"}`}>
+                          {STATUS_MAP[o.status]?.label || o.status}
+                        </span>
+                      </td>
+                      <td>{o.createdAt ? new Date(o.createdAt).toLocaleDateString("vi-VN") : "—"}</td>
+                      <td>
+                        <div style={{ display: "flex", gap: 6 }}>
+                          <button className="btn btn-sm btn-secondary" onClick={() => setDetail(o)}>Chi tiết</button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
             </tbody>
           </table>
         )}
@@ -140,78 +154,74 @@ export default function OrdersAdmin() {
         )}
       </div>
 
-      {/* Order Detail Modal */}
-      {detail && (
-        <div className="modal-backdrop" onClick={() => setDetail(null)}>
-          <div className="modal" style={{ maxWidth: 640 }} onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <span className="modal-title">Đơn hàng #{detail.id}</span>
-              <button className="modal-close" onClick={() => setDetail(null)}>✕</button>
-            </div>
-            <div className="modal-body">
-              {/* Status update */}
-              <div style={{ marginBottom: 20 }}>
-                <label className="form-label">Cập nhật trạng thái</label>
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
-                  {Object.entries(STATUS_MAP).map(([k, v]) => (
-                    <button key={k}
-                      className={`btn btn-sm ${detail.status === k ? "btn-primary" : "btn-secondary"}`}
-                      onClick={() => updateStatus(detail.id, k)}>
-                      {v.label}
-                    </button>
-                  ))}
-                </div>
+      {detail && (() => {
+        const c = parseJSON(detail.customerJson);
+        return (
+          <div className="modal-backdrop" onClick={() => setDetail(null)}>
+            <div className="modal" style={{ maxWidth: 640 }} onClick={e => e.stopPropagation()}>
+              <div className="modal-header">
+                <span className="modal-title">Đơn hàng #{detail.id}</span>
+                <button className="modal-close" onClick={() => setDetail(null)}>✕</button>
               </div>
-
-              {/* Customer Info */}
-              <div style={{ background: "rgba(15,17,23,0.5)", borderRadius: 12, padding: 16, marginBottom: 16 }}>
-                <div style={{ fontWeight: 600, color: "#e2e8f0", marginBottom: 10 }}>📋 Thông tin khách hàng</div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, fontSize: "0.85rem", color: "#94a3b8" }}>
-                  <div><b style={{ color: "#cbd5e1" }}>Tên:</b> {detail.customer?.name || detail.customer?.fullName || "—"}</div>
-                  <div><b style={{ color: "#cbd5e1" }}>SĐT:</b> {detail.customer?.phone || "—"}</div>
-                  <div style={{ gridColumn: "1/-1" }}><b style={{ color: "#cbd5e1" }}>Địa chỉ:</b> {detail.customer?.address || "—"}</div>
-                </div>
-              </div>
-
-              {/* Items */}
-              <div style={{ background: "rgba(15,17,23,0.5)", borderRadius: 12, padding: 16, marginBottom: 16 }}>
-                <div style={{ fontWeight: 600, color: "#e2e8f0", marginBottom: 10 }}>🛍️ Sản phẩm</div>
-                {(detail.items || []).map((item: any, i: number) => (
-                  <div key={i} style={{ display: "flex", gap: 12, padding: "10px 0", borderBottom: "1px solid rgba(99,102,241,0.08)" }}>
-                    {item.image && <img src={item.image} alt={item.name} style={{ width: 48, height: 48, objectFit: "cover", borderRadius: 8 }} />}
-                    <div style={{ flex: 1 }}>
-                      <div style={{ color: "#e2e8f0", fontWeight: 500 }}>{item.name}</div>
-                      <div style={{ color: "#64748b", fontSize: 13 }}>Size: {item.size} · SL: {item.quantity}</div>
-                    </div>
-                    <div style={{ color: "#818cf8", fontWeight: 600 }}>{fmt(item.price * item.quantity)}</div>
+              <div className="modal-body">
+                <div style={{ marginBottom: 20 }}>
+                  <label className="form-label">Cập nhật trạng thái</label>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
+                    {Object.entries(STATUS_MAP).map(([k, v]) => (
+                      <button key={k}
+                        className={`btn btn-sm ${detail.status === k ? "btn-primary" : "btn-secondary"}`}
+                        onClick={() => updateStatus(detail.id, k)}>
+                        {v.label}
+                      </button>
+                    ))}
                   </div>
-                ))}
-              </div>
+                </div>
 
-              {/* Summary */}
-              <div style={{ background: "rgba(15,17,23,0.5)", borderRadius: 12, padding: 16 }}>
-                <div style={{ display: "flex", flexDirection: "column", gap: 8, fontSize: "0.875rem" }}>
-                  {[
-                    ["Tạm tính", fmt(detail.sub_total)],
-                    ["Phí ship", fmt(detail.shipping_fee)],
-                    ["Giảm giá", `- ${fmt(detail.discount || 0)}`],
-                    ["Voucher", `- ${fmt(detail.voucher_discount || 0)}`],
-                    ["Điểm thưởng", `- ${fmt(detail.point_discount || 0)}`],
-                  ].map(([k, v]) => (
-                    <div key={k} style={{ display: "flex", justifyContent: "space-between", color: "#94a3b8" }}>
-                      <span>{k}</span><span style={{ color: "#cbd5e1" }}>{v}</span>
+                <div style={{ background: "rgba(15,17,23,0.5)", borderRadius: 12, padding: 16, marginBottom: 16 }}>
+                  <div style={{ fontWeight: 600, color: "#e2e8f0", marginBottom: 10 }}>📋 Thông tin khách hàng</div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, fontSize: "0.85rem", color: "#94a3b8" }}>
+                    <div><b style={{ color: "#cbd5e1" }}>Tên:</b> {c?.name || c?.fullName || "—"}</div>
+                    <div><b style={{ color: "#cbd5e1" }}>SĐT:</b> {c?.phone || "—"}</div>
+                    <div style={{ gridColumn: "1/-1" }}><b style={{ color: "#cbd5e1" }}>Địa chỉ:</b> {c?.address || detail.shippingAddress || "—"}</div>
+                  </div>
+                </div>
+
+                <div style={{ background: "rgba(15,17,23,0.5)", borderRadius: 12, padding: 16, marginBottom: 16 }}>
+                  <div style={{ fontWeight: 600, color: "#e2e8f0", marginBottom: 10 }}>🛍️ Sản phẩm</div>
+                  {(detail.orderItems || []).map((item: any, i: number) => (
+                    <div key={i} style={{ display: "flex", gap: 12, padding: "10px 0", borderBottom: "1px solid rgba(99,102,241,0.08)" }}>
+                      {item.product?.image && <img src={item.product.image} alt={item.product?.name} style={{ width: 48, height: 48, objectFit: "cover", borderRadius: 8 }} />}
+                      <div style={{ flex: 1 }}>
+                        <div style={{ color: "#e2e8f0", fontWeight: 500 }}>{item.product?.name || `SP #${item.product?.id}`}</div>
+                        <div style={{ color: "#64748b", fontSize: 13 }}>Size: {item.size} · SL: {item.quantity}</div>
+                      </div>
+                      <div style={{ color: "#818cf8", fontWeight: 600 }}>{fmt((item.price || 0) * (item.quantity || 0))}</div>
                     </div>
                   ))}
-                  <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700, fontSize: "1rem", borderTop: "1px solid rgba(99,102,241,0.15)", paddingTop: 10, color: "#e2e8f0" }}>
-                    <span>Tổng cộng</span>
-                    <span style={{ color: "#818cf8" }}>{fmt(detail.total_amount)}</span>
+                </div>
+
+                <div style={{ background: "rgba(15,17,23,0.5)", borderRadius: 12, padding: 16 }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8, fontSize: "0.875rem" }}>
+                    {[
+                      ["Tạm tính", fmt(detail.subTotal)],
+                      ["Phí ship", fmt(detail.shippingFee)],
+                      ["Giảm giá", `- ${fmt(detail.discountAmount || 0)}`],
+                    ].map(([k, v]) => (
+                      <div key={k} style={{ display: "flex", justifyContent: "space-between", color: "#94a3b8" }}>
+                        <span>{k}</span><span style={{ color: "#cbd5e1" }}>{v}</span>
+                      </div>
+                    ))}
+                    <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700, fontSize: "1rem", borderTop: "1px solid rgba(99,102,241,0.15)", paddingTop: 10, color: "#e2e8f0" }}>
+                      <span>Tổng cộng</span>
+                      <span style={{ color: "#818cf8" }}>{fmt(detail.totalAmount)}</span>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }

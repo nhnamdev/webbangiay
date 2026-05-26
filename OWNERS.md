@@ -31,7 +31,7 @@ Phụ trách toàn bộ trải nghiệm mua hàng: sản phẩm, giỏ hàng, đ
 - `package.json`, `package-lock.json`, `vite.config.js`, `tsconfig.json`, `eslint.config.mjs`, `index.html`, `vercel.json`
 - `components/MainLayout.jsx`, `components/providers/`, `components/routes/`
 - `context/`, `hooks/`, `redux/`, `services/`, `utils/`, `data/`, `public/`, `src/`
-- `app/page.tsx`, `app/globals.css`, `app/admin/admin.css`, `app/admin/supabaseClient.ts`
+- `app/page.tsx`, `app/globals.css`, `app/admin/admin.css`
 - `app/admin/(dashboard)/layout.tsx`, `app/admin/(dashboard)/page.tsx`
 
 ## Backend (Người 1)

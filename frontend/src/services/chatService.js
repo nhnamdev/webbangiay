@@ -1,14 +1,11 @@
 import OpenAI from 'openai';
-import { supabase } from '../../services/supabaseClient';
+import { get } from '../../services/http';
 
-// LƯU Ý BẢO MẬT: Chạy OpenAI ở Client sẽ làm lộ API Key!
-// Cần thêm VITE_OPENAI_API_KEY vào file .env
 const apiKey = import.meta.env.VITE_OPENAI_API_KEY || import.meta.env.OPENAI_API_KEY || import.meta.env.NEXT_PUBLIC_OPENAI_API_KEY;
 
 const openai = apiKey ? new OpenAI({ apiKey, dangerouslyAllowBrowser: true }) : null;
 
 const CHAT_MODEL = 'gpt-4o-mini';
-const EMBEDDING_MODEL = 'text-embedding-3-small';
 
 let cachedProducts = null;
 const VND_FORMATTER = new Intl.NumberFormat('vi-VN');
@@ -18,7 +15,7 @@ Nhiem vu la tu van giay, goi y size, va tra loi thac mac don hang/van chuyen/doi
 Tra loi ngan gon, lich su, than thien, bang tieng Viet.
 
 QUAN TRONG:
-1. Chi dua vao thong tin san pham trong RAG context. Neu khong co trong context thi noi ro la chua tim thay, khong tu bịa.
+1. Chi dua vao thong tin san pham trong RAG context. Neu khong co trong context thi noi ro la chua tim thay, khong tu bia.
 2. Khi goi y san pham thi uu tien markdown:
 ![Ten san pham](URL_HINH)
 [Ten san pham hien thi](/products/ID_SAN_PHAM)`;
@@ -74,36 +71,6 @@ const retrieveRelevantProducts = (message, products) => {
     return relevant.length > 0 ? relevant : products.slice(0, 5);
 };
 
-const retrieveContextWithVector = async (message) => {
-    try {
-        if (!openai) return null;
-
-        const embeddingRes = await openai.embeddings.create({
-            model: EMBEDDING_MODEL,
-            input: message,
-        });
-
-        const queryEmbedding = embeddingRes.data?.[0]?.embedding;
-        if (!queryEmbedding) return null;
-
-        const { data: matchedProducts, error } = await supabase.rpc('match_products', {
-            query_embedding: queryEmbedding,
-            match_threshold: 0.5,
-            match_count: 5,
-        });
-
-        if (error) {
-            console.error('Loi truy van vector Supabase (rpc):', error);
-            return null;
-        }
-
-        return matchedProducts;
-    } catch (error) {
-        console.error('Loi vector retrieval OpenAI:', error);
-        return null;
-    }
-};
-
 const formatPrice = (product) => {
     const value = product?.salePrice ?? product?.price;
     if (typeof value !== 'number') return 'Lien he';
@@ -133,18 +100,15 @@ export async function processChat(message) {
         }
 
         if (!cachedProducts) {
-            const { data: products, error } = await supabase.from('products').select('*');
-            if (error) {
-                console.error('Loi tai san pham cho RAG:', error);
+            try {
+                cachedProducts = await get('/products');
+            } catch (error) {
+                console.error('Loi tai san pham cho RAG:', error.message);
                 throw new Error('Khong the tai du lieu san pham.');
             }
-            cachedProducts = products || [];
         }
 
-        let relevantProducts = await retrieveContextWithVector(message);
-        if (!relevantProducts || relevantProducts.length === 0) {
-            relevantProducts = retrieveRelevantProducts(message, cachedProducts);
-        }
+        const relevantProducts = retrieveRelevantProducts(message, cachedProducts);
 
         const contextText =
             relevantProducts.length > 0

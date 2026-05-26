@@ -1,6 +1,6 @@
-﻿
+
 import { useEffect, useState, useCallback } from "react";
-import { supabaseAdmin } from "../../supabaseClient";
+import { get, post } from "../../../../services/http";
 
 const PAGE_SIZE = 15;
 
@@ -11,49 +11,49 @@ export default function PointsAdmin() {
   const [filterType, setFilterType] = useState("");
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(false);
-  const [form, setForm] = useState({ user_id: "", amount: 100, reason: "", type: "earn" as "earn" | "spend" });
+  const [form, setForm] = useState({ userId: "", amount: 100, reason: "", type: "earn" as "earn" | "spend" });
   const [saving, setSaving] = useState(false);
   const [alert, setAlert] = useState<{ type: "success" | "error"; msg: string } | null>(null);
 
-  const fetch = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
-    let q = supabaseAdmin.from("point_transactions").select("*, profiles(full_name)", { count: "exact" });
-    if (filterType) q = q.eq("type", filterType);
-    const { data, count } = await q.order("created_at", { ascending: false }).range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
-    setTransactions(data || []);
-    setTotal(count || 0);
-    setLoading(false);
+    try {
+      const users: any = await get("/users", { params: { page: 1, size: 200 } });
+      const transactionsList: any[] = [];
+      await Promise.all((users.data || []).map(async (u: any) => {
+        const txs = await get(`/points/user/${u.id}/transactions`).catch(() => []);
+        txs.forEach((t: any) => transactionsList.push({ ...t, _user: u }));
+      }));
+      let list = transactionsList;
+      if (filterType) list = list.filter(t => t.type === filterType);
+      list.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+      setTotal(list.length);
+      setTransactions(list.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE));
+    } finally {
+      setLoading(false);
+    }
   }, [filterType, page]);
 
-  useEffect(() => { fetch(); }, [fetch]);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
   const save = async () => {
-    if (!form.user_id || !form.reason || !form.amount) return;
+    if (!form.userId || !form.reason || !form.amount) return;
     setSaving(true);
-
-    // Insert transaction
-    const { error: txErr } = await supabaseAdmin.from("point_transactions").insert([{
-      user_id: form.user_id,
-      amount: form.amount,
-      reason: form.reason,
-      type: form.type,
-    }]);
-
-    if (!txErr) {
-      // Update user balance
-      const { data: profile } = await supabaseAdmin.from("profiles").select("points").eq("id", form.user_id).single();
-      if (profile) {
-        const newPoints = form.type === "earn"
-          ? (profile.points || 0) + form.amount
-          : Math.max(0, (profile.points || 0) - form.amount);
-        await supabaseAdmin.from("profiles").update({ points: newPoints }).eq("id", form.user_id);
-      }
+    try {
+      await post(`/points/user/${form.userId}`, {
+        type: form.type,
+        amount: form.amount,
+        reason: form.reason,
+      });
+      setAlert({ type: "success", msg: "Đã ghi nhận giao dịch điểm!" });
+      setModal(false);
+      fetchData();
+    } catch (e: any) {
+      setAlert({ type: "error", msg: e?.message || "Lỗi" });
+    } finally {
+      setSaving(false);
+      setTimeout(() => setAlert(null), 3000);
     }
-
-    setSaving(false);
-    if (txErr) setAlert({ type: "error", msg: txErr.message });
-    else { setAlert({ type: "success", msg: "Đã ghi nhận giao dịch điểm!" }); setModal(false); fetch(); }
-    setTimeout(() => setAlert(null), 3000);
   };
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
@@ -104,7 +104,7 @@ export default function PointsAdmin() {
               {transactions.map(t => (
                 <tr key={t.id}>
                   <td>#{t.id}</td>
-                  <td style={{ color: "#cbd5e1" }}>{(t.profiles as any)?.full_name || t.user_id?.substring(0, 8) + "..."}</td>
+                  <td style={{ color: "#cbd5e1" }}>{t._user?.fullName || t._user?.email || `#${t.userId}`}</td>
                   <td>
                     <span className={`badge ${t.type === "earn" ? "badge-success" : "badge-danger"}`}>
                       {t.type === "earn" ? "Cộng điểm" : "Trừ điểm"}
@@ -117,7 +117,7 @@ export default function PointsAdmin() {
                   </td>
                   <td style={{ color: "#94a3b8", maxWidth: 280 }}>{t.reason}</td>
                   <td style={{ color: "#64748b", fontSize: 13 }}>
-                    {t.created_at ? new Date(t.created_at).toLocaleString("vi-VN") : "—"}
+                    {t.createdAt ? new Date(t.createdAt).toLocaleString("vi-VN") : "—"}
                   </td>
                 </tr>
               ))}
@@ -150,8 +150,8 @@ export default function PointsAdmin() {
             <div className="modal-body">
               <div className="form-grid cols-1">
                 <div className="form-group">
-                  <label className="form-label">UUID người dùng *</label>
-                  <input className="form-control" value={form.user_id} onChange={e => f("user_id", e.target.value)} placeholder="UUID từ bảng profiles..." />
+                  <label className="form-label">ID người dùng *</label>
+                  <input className="form-control" value={form.userId} onChange={e => f("userId", e.target.value)} placeholder="VD: 12" />
                 </div>
                 <div className="form-group">
                   <label className="form-label">Loại giao dịch</label>

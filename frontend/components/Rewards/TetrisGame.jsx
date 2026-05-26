@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import './TetrisGame.css';
 import './GameOverlay.css'; // Reusing common overlay styles
 import { X, HelpCircle, Trophy } from 'lucide-react';
-import { supabase } from '../../services/supabaseClient';
+import { get, post } from '../../services/http';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -75,16 +75,15 @@ const TetrisGame = ({ onClose }) => {
     }, [user]);
 
     const checkDailyLimit = async () => {
-        const { data, error } = await supabase
-            .from('point_transactions')
-            .select('created_at')
-            .eq('user_id', user.id)
-            .eq('reason', 'Play Tetris Game')
-            .gte('created_at', new Date(new Date().setHours(0, 0, 0, 0)).toISOString());
-
-        if (data && data.length > 0) {
-            setDailyPlaysLeft(0);
-        } else {
+        try {
+            const all = await get(`/points/user/${user.id}/transactions`);
+            const startOfDay = new Date(new Date().setHours(0, 0, 0, 0)).getTime();
+            const today = (all || []).filter(t =>
+                t.reason === 'Play Tetris Game' && new Date(t.createdAt).getTime() >= startOfDay
+            );
+            setDailyPlaysLeft(today.length > 0 ? 0 : 1);
+        } catch (err) {
+            console.error('Error checking daily limit:', err.message);
             setDailyPlaysLeft(1);
         }
     };
@@ -93,11 +92,10 @@ const TetrisGame = ({ onClose }) => {
         if (dailyPlaysLeft <= 0) return;
 
         // Deduct Play
-        await supabase.from('point_transactions').insert({
-            user_id: user.id,
+        await post(`/points/user/${user.id}`, {
+            type: 'spend',
             amount: 0,
             reason: 'Play Tetris Game',
-            type: 'spend'
         });
         setDailyPlaysLeft(0);
 
@@ -315,18 +313,18 @@ const TetrisGame = ({ onClose }) => {
         if (reward) {
             const code = `${reward.codePrefix}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
             try {
-                await supabase.from('user_vouchers').insert({
-                    user_id: user.id,
-                    code: code,
-                    discount_amount: reward.amount,
-                    min_order_value: reward.amount * 5,
+                await post('/vouchers', {
+                    userId: user.id,
+                    code,
+                    discountAmount: reward.amount,
+                    minOrderValue: reward.amount * 5,
                     status: 'active',
-                    expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+                    expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
                 });
                 setRewardMessage(`Bạn nhận được Voucher ${reward.amount.toLocaleString()}đ!`);
                 window.dispatchEvent(new Event('pointsUpdated'));
             } catch (err) {
-                console.error(err);
+                console.error(err.message || err);
             }
         }
     };

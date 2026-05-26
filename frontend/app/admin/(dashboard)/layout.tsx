@@ -1,8 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-
-import { supabaseAdmin } from "../supabaseClient";
+import { logoutUser } from "../../../services/api";
 import "../admin.css";
 
 const navItems = [
@@ -18,17 +17,15 @@ const navItems = [
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { pathname: pathname } = useLocation();
+  const { pathname } = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
 
   const handleLogout = async () => {
-    await supabaseAdmin.auth.signOut();
-    // Xóa cookie session
+    await logoutUser();
     document.cookie = "admin-session=; path=/; max-age=0";
     navigate("/login");
-    navigate.refresh();
   };
 
   useEffect(() => {
@@ -51,7 +48,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <style>{`body { background: #0f1117; font-family: 'Inter', sans-serif; }`}</style>
       <div className="admin-body">
         <div className="admin-wrapper">
-          {/* Sidebar */}
           <aside className={`admin-sidebar ${sidebarOpen ? "open" : "closed"}`}>
             <div className="sidebar-header">
               {sidebarOpen && (
@@ -73,7 +69,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               {navItems.map((item) => (
                 <Link
                   key={item.href}
-                  href={item.href}
+                  to={item.href}
                   className={`nav-item ${isActive(item.href) ? "active" : ""}`}
                   onClick={() => isMobile && setSidebarOpen(false)}
                 >
@@ -91,14 +87,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
           </aside>
 
-          {/* Overlay for mobile */}
           {isMobile && sidebarOpen && (
             <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />
           )}
 
-          {/* Main content */}
           <main className={`admin-main ${sidebarOpen ? "sidebar-open" : "sidebar-closed"}`}>
-            {/* Top bar */}
             <header className="admin-topbar">
               {!sidebarOpen && (
                 <button className="mobile-menu-btn" onClick={() => setSidebarOpen(true)}>

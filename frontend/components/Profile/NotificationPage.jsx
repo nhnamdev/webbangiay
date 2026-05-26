@@ -6,7 +6,13 @@ import { useNavigate } from 'react-router-dom';
 import './NotificationPage.css';
 import { useAuth } from '../../context/AuthContext';
 import orderService from '../../services/orderService';
-import { supabase } from '../../services/supabaseClient';
+import { get } from '../../services/http';
+
+const parseJSON = (raw) => {
+    if (!raw) return null;
+    if (typeof raw === 'object') return raw;
+    try { return JSON.parse(raw); } catch { return null; }
+};
 
 const NotificationPage = () => {
     const navigate = useNavigate();
@@ -21,21 +27,12 @@ const NotificationPage = () => {
             try {
                 setLoading(true);
 
-                // 1. Fetch Orders
-                // Note: orderService.getOrdersByUser returns a promise
-                const orders = await orderService.getOrdersByUser(user.email);
+                const orders = await orderService.getOrdersByUser(user.email).catch(() => []);
+                const vouchers = user?.id ? await get(`/vouchers/user/${user.id}`).catch(() => []) : [];
 
-                // 2. Fetch Vouchers (from games/rewards)
-                const { data: vouchers } = await supabase
-                    .from('user_vouchers')
-                    .select('*')
-                    .eq('user_id', user.id)
-                    .order('created_at', { ascending: false });
-
-                // 3. Transform Orders to Notifications
                 const orderNotifs = (orders || []).map(order => {
-                    let title, content;
-                    // Logic to text
+                    let title;
+                    let content;
                     switch (order.status) {
                         case 'pending':
                             title = 'Đơn hàng đang chờ xử lý';
@@ -43,11 +40,13 @@ const NotificationPage = () => {
                             break;
                         case 'processing':
                         case 'shipping':
+                        case 'shipped':
                             title = 'Đơn hàng đang vận chuyển';
                             content = `Đơn hàng #${order.id} đã được giao cho đơn vị vận chuyển.`;
                             break;
                         case 'success':
                         case 'completed':
+                        case 'delivered':
                             title = 'Giao hàng thành công';
                             content = `Đơn hàng #${order.id} đã giao thành công.`;
                             break;
@@ -60,46 +59,38 @@ const NotificationPage = () => {
                             content = `Trạng thái mới cho đơn hàng #${order.id}.`;
                     }
 
-                    // Get first image
-                    const firstItem = order.items && order.items.length > 0 ? order.items[0] : null;
-                    const image = firstItem ? firstItem.image : null;
+                    const customer = parseJSON(order.customerJson);
+                    const firstItem = order.orderItems && order.orderItems.length > 0 ? order.orderItems[0] : null;
+                    const image = firstItem?.product?.image || customer?.items?.[0]?.image || null;
 
                     return {
                         id: `order-${order.id}`,
                         type: 'order',
                         title,
                         content,
-                        date: order.created_at, // ISO string
-                        isRead: true, // Assuming read for now, or could implementing local storage tracking
+                        date: order.createdAt,
+                        isRead: true,
                         image,
                         status: order.status,
-                        originalData: order
+                        originalData: order,
                     };
                 });
 
-                // 4. Transform Vouchers to Notifications
-                const voucherNotifs = (vouchers || []).map(voucher => {
-                    return {
-                        id: `voucher-${voucher.id}`,
-                        type: 'promotion',
-                        title: 'Bạn nhận được Voucher mới',
-                        content: `Mã: ${voucher.code} - Giảm: ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(voucher.discount_amount)}`,
-                        date: voucher.created_at || new Date().toISOString(), // Fallback if created_at missing
-                        isRead: false,
-                        image: null,
-                        originalData: voucher
-                    };
-                });
+                const voucherNotifs = (vouchers || []).map(voucher => ({
+                    id: `voucher-${voucher.id}`,
+                    type: 'promotion',
+                    title: 'Bạn nhận được Voucher mới',
+                    content: `Mã: ${voucher.code} - Giảm: ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(voucher.discountAmount || 0)}`,
+                    date: voucher.createdAt || new Date().toISOString(),
+                    isRead: false,
+                    image: null,
+                    originalData: voucher,
+                }));
 
-                // 5. Merge and Sort
-                const allNotifs = [...orderNotifs, ...voucherNotifs].sort((a, b) => {
-                    return new Date(b.date) - new Date(a.date);
-                });
-
+                const allNotifs = [...orderNotifs, ...voucherNotifs].sort((a, b) => new Date(b.date) - new Date(a.date));
                 setNotifications(allNotifs);
-
             } catch (error) {
-                console.error("Error fetching notifications:", error);
+                console.error('Error fetching notifications:', error.message || error);
             } finally {
                 setLoading(false);
             }
@@ -110,9 +101,9 @@ const NotificationPage = () => {
 
     const handleItemClick = (notif) => {
         if (notif.type === 'order') {
-            navigate('/orders'); // Or /orders/:id
+            navigate('/orders');
         } else if (notif.type === 'promotion') {
-            navigate('/checkout'); // Or wherever vouchers are useful
+            navigate('/checkout');
         }
     };
 
@@ -156,7 +147,7 @@ const NotificationPage = () => {
                             </div>
                             {item.type === 'order' && (
                                 <button className="notif-action-btn">
-                                    {(item.status === 'success' || item.status === 'completed') ? 'Đánh giá' : 'Xem chi tiết'}
+                                    {(item.status === 'success' || item.status === 'completed' || item.status === 'delivered') ? 'Đánh giá' : 'Xem chi tiết'}
                                 </button>
                             )}
                             {item.type === 'promotion' && (

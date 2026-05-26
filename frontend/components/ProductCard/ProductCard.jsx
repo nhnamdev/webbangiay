@@ -22,11 +22,11 @@ const ProductCard = ({ product }) => {
                 {/* 12.12 Overlay if needed - user sample had it */}
 
                 <div className="badge-container">
-                    {product.badges && product.badges.map((b, i) => (
-                        <span key={i} className={`badge ${b.toLowerCase()}`}>{b}</span>
+                    {Array.isArray(product.badges) && product.badges.map((b, i) => (
+                        <span key={i} className={`badge ${String(b).toLowerCase()}`}>{b}</span>
                     ))}
-                    {!product.badges && product.isNew && <span className="badge new">{t('new')}</span>}
-                    {!product.badges && product.isSale && <span className="badge sale">{t('sale_badge')}</span>}
+                    {!Array.isArray(product.badges) && product.isNew && <span className="badge new">{t('new')}</span>}
+                    {!Array.isArray(product.badges) && product.isSale && <span className="badge sale">{t('sale_badge')}</span>}
                 </div>
             </div>
             <div className="product-info">

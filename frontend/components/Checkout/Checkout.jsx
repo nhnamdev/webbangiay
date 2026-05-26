@@ -8,7 +8,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectCartItems, clearCart } from '../../redux/cartSlice';
 import { processPayment } from '../../services/paymentService';
-import { supabase } from '../../services/supabaseClient';
+import { get, post, put } from '../../services/http';
 import { validateCoupon, markCouponAsUsed } from '../../services/couponService';
 import './Checkout.css';
 import { CreditCard, Truck, Wallet, Tag, Ticket } from 'lucide-react';
@@ -94,20 +94,20 @@ const Checkout = () => {
     // --- VOUCHER SELECTION HANDLER ---
     const handleSelectVoucher = (voucher) => {
         // Validate minimum order value
-        if (voucher.min_order_value && subTotal < voucher.min_order_value) {
-            setVoucherMsg(`Đơn hàng tối thiểu ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(voucher.min_order_value)}`);
+        if (voucher.minOrderValue && subTotal < voucher.minOrderValue) {
+            setVoucherMsg(`Đơn hàng tối thiểu ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(voucher.minOrderValue)}`);
             return;
         }
 
         // Validate expiry
-        if (new Date(voucher.expires_at) < new Date()) {
+        if (voucher.expiresAt && new Date(voucher.expiresAt) < new Date()) {
             setVoucherMsg('Voucher đã hết hạn');
             return;
         }
 
         setSelectedVoucher(voucher);
-        setVoucherDiscount(voucher.discount_amount);
-        setVoucherMsg(`Áp dụng voucher giảm ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(voucher.discount_amount)}`);
+        setVoucherDiscount(voucher.discountAmount);
+        setVoucherMsg(`Áp dụng voucher giảm ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(voucher.discountAmount)}`);
         setShowVoucherList(false);
     };
 
@@ -146,23 +146,26 @@ const Checkout = () => {
 
             // Fetch points
             const fetchPoints = async () => {
-                const { data } = await supabase.from('profiles').select('points').eq('id', user.id).single();
-                if (data) setAvailablePoints(data.points);
+                try {
+                    const data = await get(`/users/${user.id}`);
+                    if (data) setAvailablePoints(data.points || 0);
+                } catch (err) {
+                    console.error('Error loading points:', err.message);
+                }
             };
             fetchPoints();
 
             // Fetch user vouchers
             const fetchVouchers = async () => {
-                const { data, error } = await supabase
-                    .from('user_vouchers')
-                    .select('*')
-                    .eq('user_id', user.id)
-                    .eq('status', 'active')
-                    .gte('expires_at', new Date().toISOString())
-                    .order('discount_amount', { ascending: false });
-
-                if (data && !error) {
-                    setUserVouchers(data);
+                try {
+                    const all = await get(`/vouchers/user/${user.id}`);
+                    const nowIso = new Date().toISOString();
+                    const active = (all || [])
+                        .filter(v => v.status === 'active' && (!v.expiresAt || v.expiresAt >= nowIso))
+                        .sort((a, b) => (b.discountAmount || 0) - (a.discountAmount || 0));
+                    setUserVouchers(active);
+                } catch (err) {
+                    console.error('Error loading vouchers:', err.message);
                 }
             };
             fetchVouchers();
@@ -210,30 +213,38 @@ const Checkout = () => {
         setLoading(true);
         try {
             const fullAddress = `${formData.detailAddress}, ${formData.province}`;
+            const orderItems = checkoutItems.map(item => ({
+                product: { id: item.product.id },
+                price: item.product.isSale ? item.product.salePrice : item.product.price,
+                quantity: item.quantity,
+                size: item.size,
+            }));
             const orderData = {
+                user: user?.id ? { id: user.id } : null,
+                email: formData.email || user?.email,
                 customer: {
                     fullName: formData.fullName,
                     phone: formData.phone,
                     email: formData.email,
-                    address: fullAddress
+                    address: fullAddress,
+                    items: checkoutItems.map(item => ({
+                        product_id: item.product.id,
+                        product_name: item.product.name,
+                        price: item.product.isSale ? item.product.salePrice : item.product.price,
+                        quantity: item.quantity,
+                        size: item.size,
+                        image: item.product.image,
+                    })),
                 },
-                items: checkoutItems.map(item => ({
-                    product_id: item.product.id,
-                    product_name: item.product.name,
-                    price: item.product.isSale ? item.product.salePrice : item.product.price,
-                    quantity: item.quantity,
-                    size: item.size,
-                    image: item.product.image
-                })),
-                sub_total: subTotal,
-                shipping_fee: shippingFee,
-                discount: discount,
-                voucher_discount: voucherDiscount,
-                voucher_code: selectedVoucher?.code || null,
-                point_discount: pointDiscount,
-                total_amount: finalTotal,
-                payment_method: paymentMethod,
-                status: 'pending'
+                orderItems,
+                subTotal,
+                shippingFee,
+                discountAmount: discount + voucherDiscount + pointDiscount,
+                totalAmount: finalTotal,
+                shippingAddress: fullAddress,
+                paymentMethod,
+                couponCode: appliedCoupon?.code || selectedVoucher?.code || null,
+                status: 'pending',
             };
 
             // ... inside checkout component ...
@@ -242,43 +253,29 @@ const Checkout = () => {
                 await processPayment(orderData, 'cod');
 
                 // --- XỬ LÝ TRỪ ĐIỂM NẾU CÓ DÙNG ---
-                if (usePoints && pointDiscount > 0 && user) {
+                if (usePoints && pointDiscount > 0 && user?.id) {
                     const pointsUsed = Math.ceil(pointDiscount / 1000);
                     try {
-                        const { error: deductError } = await supabase.rpc('decrement_points', {
-                            // Nếu không có function RPC, dùng update tay (kém an toàn hơn chút nhưng ok cho demo)
-                            // Ta dùng update tay ở bước dưới cho đơn giản vì chưa tạo RPC
+                        await post(`/points/user/${user.id}`, {
+                            type: 'spend',
+                            amount: pointsUsed,
+                            reason: 'Dùng Xu thanh toán đơn hàng',
                         });
-
-                        // Update tay:
-                        // 1. Get curent (again for safety? or trust local?) - Trust local for speed/demo
-                        const newBalance = availablePoints - pointsUsed;
-                        await supabase.from('profiles').update({ points: newBalance }).eq('id', user.id);
-
-                        // 2. Log spend transaction
-                        await supabase.from('point_transactions').insert([{
-                            user_id: user.id,
-                            amount: -pointsUsed,
-                            reason: `Dùng Xu thanh toán đơn hàng`,
-                            type: 'spend'
-                        }]);
-
                     } catch (err) {
-                        console.error("Lỗi trừ điểm:", err);
+                        console.error('Lỗi trừ điểm:', err.message || err);
                     }
                 }
                 // -----------------------------------
 
                 // --- MARK VOUCHER AS USED ---
-                if (selectedVoucher && user) {
+                if (selectedVoucher && user?.id) {
                     try {
-                        await supabase
-                            .from('user_vouchers')
-                            .update({ status: 'used', used_at: new Date().toISOString() })
-                            .eq('id', selectedVoucher.id)
-                            .eq('user_id', user.id);
+                        await put(`/vouchers/${selectedVoucher.id}`, {
+                            ...selectedVoucher,
+                            status: 'used',
+                        });
                     } catch (err) {
-                        console.error("Lỗi cập nhật voucher:", err);
+                        console.error('Lỗi cập nhật voucher:', err.message || err);
                     }
                 }
 
@@ -288,47 +285,19 @@ const Checkout = () => {
                 }
                 // ----------------------------
 
-                // --- TÍCH ĐIỂM THÀNH VIÊN (NEW) ---
-                if (user) {
+                // --- TÍCH ĐIỂM THÀNH VIÊN ---
+                if (user?.id) {
                     try {
-                        // Quy đổi điểm: 10,000 VND = 1 điểm (Tương đương 3,000,000 = 300 điểm)
-                        // Công thức: total_amount / 10000
                         const pointsEarned = Math.floor(finalTotal / 10000);
-
                         if (pointsEarned > 0) {
-                            // 1. Lấy điểm hiện tại
-                            const { data: profile } = await supabase
-                                .from('profiles')
-                                .select('points')
-                                .eq('id', user.id)
-                                .single();
-
-                            const currentPoints = profile ? profile.points : 0;
-                            const newPoints = currentPoints + pointsEarned;
-
-                            // 2. Cập nhật điểm mới
-                            await supabase
-                                .from('profiles')
-                                .update({ points: newPoints, updated_at: new Date() })
-                                .eq('id', user.id);
-
-                            // 3. Ghi lịch sử giao dịch
-                            await supabase
-                                .from('point_transactions')
-                                .insert([
-                                    {
-                                        user_id: user.id,
-                                        amount: pointsEarned,
-                                        reason: `Tích điểm đơn hàng #${Date.now().toString().slice(-6)}`,
-                                        type: 'earn'
-                                    }
-                                ]);
-
-                            console.log(`Đã tích ${pointsEarned} điểm cho user ${user.id}`);
+                            await post(`/points/user/${user.id}`, {
+                                type: 'earn',
+                                amount: pointsEarned,
+                                reason: `Tích điểm đơn hàng #${Date.now().toString().slice(-6)}`,
+                            });
                         }
                     } catch (pointError) {
-                        console.error("Lỗi tích điểm:", pointError);
-                        // Không chặn luồng thanh toán chính nếu lỗi tích điểm
+                        console.error('Lỗi tích điểm:', pointError.message || pointError);
                     }
                 }
                 // ------------------------------------
@@ -459,11 +428,11 @@ const Checkout = () => {
                                         {selectedVoucher.code}
                                     </div>
                                     <div style={{ fontSize: '0.85rem', color: '#666' }}>
-                                        Giảm: {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(selectedVoucher.discount_amount)}
+                                        Giảm: {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(selectedVoucher.discountAmount)}
                                     </div>
-                                    {selectedVoucher.min_order_value > 0 && (
+                                    {selectedVoucher.minOrderValue > 0 && (
                                         <div style={{ fontSize: '0.8rem', color: '#999', marginTop: '3px' }}>
-                                            Đơn tối thiểu: {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(selectedVoucher.min_order_value)}
+                                            Đơn tối thiểu: {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(selectedVoucher.minOrderValue)}
                                         </div>
                                     )}
                                     <button
@@ -510,8 +479,8 @@ const Checkout = () => {
                                 {showVoucherList && (
                                     <div style={{ marginTop: '10px', maxHeight: '200px', overflowY: 'auto' }}>
                                         {userVouchers.map((voucher) => {
-                                            const isExpired = new Date(voucher.expires_at) < new Date();
-                                            const meetsMinOrder = !voucher.min_order_value || subTotal >= voucher.min_order_value;
+                                            const isExpired = voucher.expiresAt && new Date(voucher.expiresAt) < new Date();
+                                            const meetsMinOrder = !voucher.minOrderValue || subTotal >= voucher.minOrderValue;
                                             const canUse = !isExpired && meetsMinOrder;
 
                                             return (
@@ -535,15 +504,15 @@ const Checkout = () => {
                                                         {voucher.code}
                                                     </div>
                                                     <div style={{ fontSize: '0.85rem', color: '#28a745', fontWeight: 'bold' }}>
-                                                        Giảm {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(voucher.discount_amount)}
+                                                        Giảm {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(voucher.discountAmount)}
                                                     </div>
-                                                    {voucher.min_order_value > 0 && (
+                                                    {voucher.minOrderValue > 0 && (
                                                         <div style={{ fontSize: '0.75rem', color: meetsMinOrder ? '#666' : '#dc3545', marginTop: '3px' }}>
-                                                            Đơn tối thiểu: {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(voucher.min_order_value)}
+                                                            Đơn tối thiểu: {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(voucher.minOrderValue)}
                                                         </div>
                                                     )}
                                                     <div style={{ fontSize: '0.75rem', color: '#999', marginTop: '3px' }}>
-                                                        HSD: {new Date(voucher.expires_at).toLocaleDateString('vi-VN')}
+                                                        HSD: {voucher.expiresAt ? new Date(voucher.expiresAt).toLocaleDateString('vi-VN') : '—'}
                                                     </div>
                                                     {!canUse && (
                                                         <div style={{ fontSize: '0.75rem', color: '#dc3545', marginTop: '5px', fontWeight: 'bold' }}>
