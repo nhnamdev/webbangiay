@@ -1,10 +1,8 @@
-# Coolify (hoặc bất kỳ host nào chạy docker compose) đọc file này để deploy stack.
-# Set các env trong Coolify "Environment Variables" panel.
+# Coolify hoặc bất kỳ host nào chạy Docker Compose sẽ đọc file này để deploy stack.
+# Set các biến môi trường trong panel "Environment Variables" của Coolify.
 #
-# Frontend phục vụ static build qua `serve` (Node) trên port 80.
-# Browser gọi REST trực tiếp tới backend qua URL trong VITE_API_URL
-# (đã baked-in lúc `npm run build`). Đặt VITE_API_URL là URL công khai
-# của backend, ví dụ https://api.zestfoot.example/api.
+# Frontend phục vụ static build qua nginx trên port 80.
+# Browser gọi REST qua URL trong VITE_API_URL, được baked-in lúc build.
 
 services:
   backend:
@@ -33,11 +31,3 @@ services:
       - backend
     expose:
       - "80"
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.zestfoot-frontend.rule=Host(`zestfoot.mocmoc.vn`)
-      - traefik.http.routers.zestfoot-frontend.entrypoints=https
-      - traefik.http.routers.zestfoot-frontend.tls=true
-      - traefik.http.routers.zestfoot-frontend.tls.certresolver=letsencrypt
-      - traefik.http.routers.zestfoot-frontend.priority=10
-      - traefik.http.services.zestfoot-frontend.loadbalancer.server.port=80
