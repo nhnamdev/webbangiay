@@ -23,11 +23,13 @@ services:
       - "8080"
     labels:
       - traefik.enable=true
+      - traefik.docker.network=coolify
       - traefik.http.routers.zestfoot-backend.rule=Host(`zestfoot.mocmoc.vn`) && PathPrefix(`/api`)
       - traefik.http.routers.zestfoot-backend.entrypoints=https
       - traefik.http.routers.zestfoot-backend.tls=true
       - traefik.http.routers.zestfoot-backend.tls.certresolver=letsencrypt
       - traefik.http.routers.zestfoot-backend.priority=100
+      - traefik.http.routers.zestfoot-backend.service=zestfoot-backend
       - traefik.http.services.zestfoot-backend.loadbalancer.server.port=8080
     networks:
       - coolify
@@ -45,11 +47,13 @@ services:
       - "80"
     labels:
       - traefik.enable=true
+      - traefik.docker.network=coolify
       - traefik.http.routers.zestfoot-frontend.rule=Host(`zestfoot.mocmoc.vn`)
       - traefik.http.routers.zestfoot-frontend.entrypoints=https
       - traefik.http.routers.zestfoot-frontend.tls=true
       - traefik.http.routers.zestfoot-frontend.tls.certresolver=letsencrypt
       - traefik.http.routers.zestfoot-frontend.priority=10
+      - traefik.http.routers.zestfoot-frontend.service=zestfoot-frontend
       - traefik.http.services.zestfoot-frontend.loadbalancer.server.port=80
     networks:
       - coolify
