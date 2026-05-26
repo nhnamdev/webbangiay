@@ -21,16 +21,6 @@ services:
       JAVA_OPTS: ${JAVA_OPTS:--XX:MaxRAMPercentage=75.0}
     expose:
       - "8080"
-    labels:
-      - traefik.enable=true
-      - traefik.docker.network=coolify
-      - traefik.http.routers.zestfoot-backend.rule=Host(`zestfoot.mocmoc.vn`) && PathPrefix(`/api`)
-      - traefik.http.routers.zestfoot-backend.entrypoints=https
-      - traefik.http.routers.zestfoot-backend.tls=true
-      - traefik.http.routers.zestfoot-backend.tls.certresolver=letsencrypt
-      - traefik.http.routers.zestfoot-backend.priority=100
-      - traefik.http.routers.zestfoot-backend.service=zestfoot-backend
-      - traefik.http.services.zestfoot-backend.loadbalancer.server.port=8080
     networks:
       - coolify
 
