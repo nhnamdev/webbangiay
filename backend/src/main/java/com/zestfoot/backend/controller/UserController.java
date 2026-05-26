@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -82,6 +83,10 @@ public class UserController {
             if (body.containsKey("points")) u.setPoints(toInt(body.get("points")));
             if (body.containsKey("spinTickets")) u.setSpinTickets(toInt(body.get("spinTickets")));
             if (body.containsKey("spin_tickets")) u.setSpinTickets(toInt(body.get("spin_tickets")));
+            if (body.containsKey("lastLuckySpin")) u.setLastLuckySpin(parseDateTime(body.get("lastLuckySpin")));
+            if (body.containsKey("last_lucky_spin")) u.setLastLuckySpin(parseDateTime(body.get("last_lucky_spin")));
+            if (body.containsKey("lastDailyCheckIn")) u.setLastDailyCheckIn(parseDateTime(body.get("lastDailyCheckIn")));
+            if (body.containsKey("last_daily_check_in")) u.setLastDailyCheckIn(parseDateTime(body.get("last_daily_check_in")));
             if (body.containsKey("password") && body.get("password") != null) {
                 u.setPasswordHash(passwordEncoder.encode(body.get("password").toString()));
             }
@@ -100,5 +105,26 @@ public class UserController {
         if (o == null) return null;
         if (o instanceof Number) return ((Number) o).intValue();
         try { return Integer.parseInt(o.toString()); } catch (Exception e) { return null; }
+    }
+
+    private static LocalDateTime parseDateTime(Object o) {
+        if (o == null) return null;
+        try {
+            String str = o.toString();
+            if (str.endsWith("Z")) {
+                return java.time.ZonedDateTime.parse(str).toLocalDateTime();
+            }
+            if (str.contains("T")) {
+                return LocalDateTime.parse(str, java.time.format.DateTimeFormatter.ISO_DATE_TIME);
+            }
+            return LocalDateTime.parse(str);
+        } catch (Exception e) {
+            try {
+                long ms = Long.parseLong(o.toString());
+                return LocalDateTime.ofInstant(java.time.Instant.ofEpochMilli(ms), java.time.ZoneId.systemDefault());
+            } catch (Exception ex) {
+                return null;
+            }
+        }
     }
 }
