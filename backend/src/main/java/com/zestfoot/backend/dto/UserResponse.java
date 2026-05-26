@@ -3,6 +3,7 @@ package com.zestfoot.backend.dto;
 import com.zestfoot.backend.entity.User;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,6 +20,8 @@ public class UserResponse {
     private String lastName;
     private String phone;
     private String address;
+    private LocalDateTime lastLuckySpin;
+    private LocalDateTime lastDailyCheckIn;
     private Map<String, Object> user_metadata;
     private Map<String, Object> app_metadata;
 
@@ -34,6 +37,8 @@ public class UserResponse {
         r.lastName = u.getLastName();
         r.phone = u.getPhone();
         r.address = u.getAddress();
+        r.lastLuckySpin = u.getLastLuckySpin();
+        r.lastDailyCheckIn = u.getLastDailyCheckIn();
 
         Map<String, Object> meta = new HashMap<>();
         meta.put("first_name", u.getFirstName());
