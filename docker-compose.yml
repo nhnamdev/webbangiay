@@ -11,41 +11,49 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    image: zestfoot-backend:latest
-    container_name: zestfoot-backend
     restart: unless-stopped
     environment:
-      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
-      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
-      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL:?Set SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME:?Set SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:?Set SPRING_DATASOURCE_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: ${SPRING_JPA_HIBERNATE_DDL_AUTO:-update}
       SERVER_PORT: 8080
       JAVA_OPTS: ${JAVA_OPTS:--XX:MaxRAMPercentage=75.0}
-    ports:
-      - "8080:8080"
-    # If MySQL runs on the VPS host (not in a container), uncomment so the
-    # container can resolve the host's network namespace as "host.docker.internal":
-    # extra_hosts:
-    #   - "host.docker.internal:host-gateway"
+    expose:
+      - "8080"
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.zestfoot-backend.rule=Host(`zestfoot.mocmoc.vn`) && PathPrefix(`/api`)
+      - traefik.http.routers.zestfoot-backend.entrypoints=https
+      - traefik.http.routers.zestfoot-backend.tls=true
+      - traefik.http.routers.zestfoot-backend.tls.certresolver=letsencrypt
+      - traefik.http.routers.zestfoot-backend.priority=100
+      - traefik.http.services.zestfoot-backend.loadbalancer.server.port=8080
     networks:
-      - zestfoot
+      - coolify
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        VITE_API_URL: ${VITE_API_URL}
-    image: zestfoot-frontend:latest
-    container_name: zestfoot-frontend
+        VITE_API_URL: ${VITE_API_URL:-/api}
     restart: unless-stopped
     depends_on:
       - backend
-    ports:
-      - "80:80"
+    expose:
+      - "80"
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.zestfoot-frontend.rule=Host(`zestfoot.mocmoc.vn`)
+      - traefik.http.routers.zestfoot-frontend.entrypoints=https
+      - traefik.http.routers.zestfoot-frontend.tls=true
+      - traefik.http.routers.zestfoot-frontend.tls.certresolver=letsencrypt
+      - traefik.http.routers.zestfoot-frontend.priority=10
+      - traefik.http.services.zestfoot-frontend.loadbalancer.server.port=80
     networks:
-      - zestfoot
+      - coolify
 
 networks:
-  zestfoot:
-    driver: bridge
+  coolify:
+    external: true
