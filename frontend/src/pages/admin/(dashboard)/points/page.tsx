@@ -1,6 +1,6 @@
 
 import { useEffect, useState, useCallback } from "react";
-import { get, post } from "../../../../services/http";
+import { get, post } from "@/services/http";
 
 const PAGE_SIZE = 15;
 

@@ -8,7 +8,7 @@ const ProductCard = ({ product }) => {
     const { t } = useLanguage();
     return (
         <Link
-            href={`/products/${product.id}`}
+            to={`/products/${product.id}`}
             className="product-card"
             data-aos="fade-up"
         >

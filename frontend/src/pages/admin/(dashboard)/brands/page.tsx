@@ -1,6 +1,6 @@
 
 import { useEffect, useState, useCallback } from "react";
-import { get, post, put as putReq, del } from "../../../../services/http";
+import { get, post, put as putReq, del } from "@/services/http";
 
 interface Brand { id: number; name: string; logo: string | null; slug: string | null; }
 

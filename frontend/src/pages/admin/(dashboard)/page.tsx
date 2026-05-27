@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from "react";
-import { get } from "../../../services/http";
+import { get } from "@/services/http";
 
 interface Stats {
   products: number;

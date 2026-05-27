@@ -1,6 +1,6 @@
 
 import { useEffect, useState, useCallback } from "react";
-import { get, post, put as putReq, del } from "../../../../services/http";
+import { get, post, put as putReq, del } from "@/services/http";
 
 interface News {
   id: number;

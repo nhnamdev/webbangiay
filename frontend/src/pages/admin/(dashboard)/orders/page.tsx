@@ -1,6 +1,6 @@
 
 import { useEffect, useState, useCallback } from "react";
-import { get, put as putReq } from "../../../../services/http";
+import { get, put as putReq } from "@/services/http";
 
 const STATUS_MAP: Record<string, { label: string; badge: string }> = {
   pending:    { label: "Chờ xử lý",   badge: "badge-warning" },

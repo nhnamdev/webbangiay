@@ -1,5 +1,5 @@
 {
-  "name": "zestfoot-next",
+  "name": "zestfoot",
   "version": "0.1.0",
   "description": "ZestFoot is a Vite + React sneaker e-commerce app talking to a Spring Boot + MySQL backend.",
   "private": true,
