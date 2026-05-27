@@ -58,5 +58,13 @@ public class Order {
         if (createdAt == null) {
             createdAt = LocalDateTime.now();
         }
+        if (totalAmount == null) {
+            double total = (subTotal != null ? subTotal : 0)
+                + (shippingFee != null ? shippingFee : 0)
+                - (discount != null ? discount : 0)
+                - (voucherDiscount != null ? voucherDiscount : 0)
+                - (pointDiscount != null ? pointDiscount : 0);
+            totalAmount = Math.max(total, 0);
+        }
     }
 }

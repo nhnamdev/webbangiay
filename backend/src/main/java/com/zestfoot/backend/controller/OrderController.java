@@ -36,6 +36,14 @@ public class OrderController {
     @PostMapping
     public Order createOrder(@RequestBody Order order) {
         if (order.getStatus() == null) order.setStatus("pending");
+        if (order.getTotalAmount() == null) {
+            double total = (order.getSubTotal() != null ? order.getSubTotal() : 0)
+                + (order.getShippingFee() != null ? order.getShippingFee() : 0)
+                - (order.getDiscount() != null ? order.getDiscount() : 0)
+                - (order.getVoucherDiscount() != null ? order.getVoucherDiscount() : 0)
+                - (order.getPointDiscount() != null ? order.getPointDiscount() : 0);
+            order.setTotalAmount(Math.max(total, 0));
+        }
         return orderRepository.save(order);
     }
 

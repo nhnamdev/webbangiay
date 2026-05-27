@@ -7,11 +7,11 @@ import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectCartItems, clearCart } from '../../redux/cartSlice';
-import { processPayment } from '../../services/paymentService';
+import { processPayment, createPayOSPayment } from '../../services/paymentService';
 import { get, post, put } from '../../services/http';
 import { validateCoupon, markCouponAsUsed } from '../../services/couponService';
 import './Checkout.css';
-import { CreditCard, Truck, Wallet, Tag, Ticket } from 'lucide-react';
+import { Truck, Tag, Ticket, Wallet } from 'lucide-react';
 import ProvinceSelector from './ProvinceSelector';
 
 const Checkout = () => {
@@ -262,6 +262,17 @@ const Checkout = () => {
 
             // ... inside checkout component ...
 
+            if (paymentMethod === 'payos') {
+                const createdOrder = await processPayment(orderData, 'payos');
+
+                const payosResult = await createPayOSPayment(createdOrder.id);
+
+                if (fromCart) dispatch(clearCart());
+
+                window.location.href = payosResult.checkoutUrl;
+                return;
+            }
+
             if (paymentMethod === 'cod') {
                 await processPayment(orderData, 'cod');
 
@@ -333,7 +344,7 @@ const Checkout = () => {
                 setError('Lỗi kết nối mạng. Vui lòng kiểm tra đường truyền.');
             }
         } finally {
-            if (paymentMethod === 'cod') setLoading(false);
+            setLoading(false);
         }
     };
 
@@ -370,11 +381,9 @@ const Checkout = () => {
                         <div className={`payment-method-item ${paymentMethod === 'cod' ? 'active' : ''}`} onClick={() => setPaymentMethod('cod')}>
                             <Truck size={20} style={{ marginRight: '10px' }} /><span>COD</span>
                         </div>
-                        <div className={`payment-method-item ${paymentMethod === 'momo' ? 'active' : ''}`} onClick={() => setPaymentMethod('momo')}>
-                            <Wallet size={20} style={{ marginRight: '10px', color: '#af2070' }} /><span>Ví MoMo</span>
-                        </div>
-                        <div className={`payment-method-item ${paymentMethod === 'vnpay' ? 'active' : ''}`} onClick={() => setPaymentMethod('vnpay')}>
-                            <CreditCard size={20} style={{ marginRight: '10px', color: '#005ba3' }} /><span>VNPAY-QR</span>
+
+                        <div className={`payment-method-item ${paymentMethod === 'payos' ? 'active' : ''}`} onClick={() => setPaymentMethod('payos')}>
+                            <Wallet size={20} style={{ marginRight: '10px', color: '#008000' }} /><span>PayOS</span>
                         </div>
                     </div>
                 </form>

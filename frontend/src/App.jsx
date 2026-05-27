@@ -13,7 +13,8 @@ import Page10 from './pages/(main)/collections/[slug]/page';
 import Page11 from './pages/(main)/favorites/page';
 import Page12 from './pages/(main)/orders/page';
 import Page13 from './pages/(main)/orders/[id]/page';
-import Page14 from './pages/(main)/payment-gateway/[method]/page';
+import Page35 from './pages/(main)/payment-return/page';
+import Page36 from './pages/(main)/payment-cancel/page';
 import Page15 from './pages/(main)/products/[id]/page';
 import Page16 from './pages/(main)/profile/page';
 import Page17 from './pages/(main)/rewards/lucky-wheel/page';
@@ -63,7 +64,6 @@ function App() {
         <Route path="/favorites" element={<Page11 />} />
         <Route path="/orders" element={<Page12 />} />
         <Route path="/orders/:id" element={<Page13 />} />
-        <Route path="/payment-gateway/:method" element={<Page14 />} />
         <Route path="/products/:id" element={<Page15 />} />
         <Route path="/profile" element={<Page16 />} />
         <Route path="/rewards/lucky-wheel" element={<Page17 />} />
@@ -82,6 +82,8 @@ function App() {
         <Route path="/admin/products" element={<AdminLayout><Page30 /></AdminLayout>} />
         <Route path="/admin/users" element={<AdminLayout><Page31 /></AdminLayout>} />
         <Route path="/admin/vouchers" element={<AdminLayout><Page32 /></AdminLayout>} />
+        <Route path="/payment-return" element={<Page35 />} />
+        <Route path="/payment-cancel" element={<Page36 />} />
         <Route path="/" element={<Page34 />} />
           </Routes>
         </Providers>
