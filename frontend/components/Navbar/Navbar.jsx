@@ -143,7 +143,7 @@ const Navbar = () => {
   const navLinks = useMemo(() => [
     {
       name: t('brands'),
-      path: "/Home/thuong-hieu",
+      path: "/collections/all",
       type: "list", // Grid/List of brands
       data: [
         { name: "TẤT CẢ", path: "/collections/all" },

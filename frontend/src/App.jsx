@@ -33,12 +33,16 @@ import Page30 from '../app/admin/(dashboard)/products/page';
 import Page31 from '../app/admin/(dashboard)/users/page';
 import Page32 from '../app/admin/(dashboard)/vouchers/page';
 import Page34 from '../app/page';
-import Providers from '../components/providers/Providers'; // Assuming Providers exists
+import Providers from '../components/providers/Providers';
+import ChatBot from '../components/ChatBot/ChatBot';
+import Membership from '../components/Membership/Membership';
 
 function App() {
   return (
     <BrowserRouter>
         <Providers>
+          <Membership />
+          <ChatBot />
           <Routes>
         <Route path="/forgot" element={<Page0 />} />
         <Route path="/login" element={<Page1 />} />

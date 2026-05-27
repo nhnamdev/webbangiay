@@ -1,0 +1,103 @@
+.login-prompt-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.login-prompt-modal {
+    background: white;
+    border-radius: 12px;
+    padding: 40px 32px 32px;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    animation: fadeInUp 0.3s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.login-prompt-close {
+    position: absolute;
+    top: 10px;
+    right: 16px;
+    background: none;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+    color: #999;
+    line-height: 1;
+}
+
+.login-prompt-close:hover {
+    color: #333;
+}
+
+.login-prompt-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.login-prompt-modal h3 {
+    margin: 0 0 12px;
+    font-size: 20px;
+    color: #222;
+}
+
+.login-prompt-modal p {
+    margin: 0 0 28px;
+    font-size: 14px;
+    color: #666;
+    line-height: 1.5;
+}
+
+.login-prompt-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.login-prompt-btn {
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: background 0.2s;
+}
+
+.login-prompt-btn.primary {
+    background: #1a1a1a;
+    color: white;
+}
+
+.login-prompt-btn.primary:hover {
+    background: #333;
+}
+
+.login-prompt-btn.secondary {
+    background: #f5f5f5;
+    color: #333;
+}
+
+.login-prompt-btn.secondary:hover {
+    background: #e0e0e0;
+}

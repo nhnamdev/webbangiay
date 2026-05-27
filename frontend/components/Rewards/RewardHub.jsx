@@ -1,19 +1,32 @@
 
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './RewardHub.css';
 import DailyCheckIn from './DailyCheckIn';
 import { Gamepad2, User } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { get } from '../../services/http';
+import { isAuthenticated } from '../../services/api';
+import LoginPromptModal from '../ui/LoginPromptModal';
 
 const RewardHub = () => {
     const { user } = useAuth();
     const [points, setPoints] = useState(0);
+    const [showLoginPrompt, setShowLoginPrompt] = useState(false);
     const navigate = useNavigate();
 
-    React.useEffect(() => {
+    useEffect(() => {
+        const checkAuth = async () => {
+            const authed = await isAuthenticated();
+            if (!authed) {
+                setShowLoginPrompt(true);
+            }
+        };
+        checkAuth();
+    }, []);
+
+    useEffect(() => {
         const fetchPoints = async () => {
             if (user?.id) {
                 try {
@@ -49,6 +62,10 @@ const RewardHub = () => {
 
     return (
         <div className="reward-hub-container">
+            <LoginPromptModal
+                isOpen={showLoginPrompt}
+                onClose={() => setShowLoginPrompt(false)}
+            />
             <div className="reward-header">
                 <div className="reward-user-info">
                     <div>
