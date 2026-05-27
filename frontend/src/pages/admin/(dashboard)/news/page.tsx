@@ -1,28 +1,26 @@
 
 import { useEffect, useState, useCallback } from "react";
+import { Card, Row, Col, Button, Modal, Form, Input, Space, Popconfirm, message, Spin, Typography, Empty } from "antd";
+import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { get, post, put as putReq, del } from "@/services/http";
 
+const { Title, Text } = Typography;
+const { TextArea } = Input;
+
 interface News {
-  id: number;
-  title: string | null;
-  excerpt: string | null;
-  image: string | null;
-  publishedAt: string | null;
-  content: string | null;
-  author: string | null;
-  slug: string | null;
+  id: number; title: string | null; excerpt: string | null; image: string | null;
+  publishedAt: string | null; content: string | null; author: string | null; slug: string | null;
 }
 
-const EMPTY: Omit<News, "id"> = { title: null, excerpt: null, image: null, publishedAt: null, content: null, author: null, slug: null };
+const INITIAL: any = { title: null, excerpt: null, image: null, publishedAt: null, content: null, author: null, slug: null };
 
 export default function NewsAdmin() {
   const [news, setNews] = useState<News[]>([]);
   const [loading, setLoading] = useState(true);
-  const [modal, setModal] = useState<"create" | "edit" | null>(null);
-  const [form, setForm] = useState<Omit<News, "id">>(EMPTY);
+  const [modalOpen, setModalOpen] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
-  const [alert, setAlert] = useState<{ type: "success" | "error"; msg: string } | null>(null);
+  const [form] = Form.useForm();
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -37,134 +35,117 @@ export default function NewsAdmin() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  const openCreate = () => { setForm(EMPTY); setModal("create"); setEditId(null); };
-  const openEdit = (n: News) => { setForm({ title: n.title, excerpt: n.excerpt, image: n.image, publishedAt: n.publishedAt, content: n.content, author: n.author, slug: n.slug }); setModal("edit"); setEditId(n.id); };
-  const closeModal = () => setModal(null);
+  const openCreate = () => { setEditId(null); form.resetFields(); setModalOpen(true); };
+  const openEdit = (n: News) => { setEditId(n.id); form.setFieldsValue(n); setModalOpen(true); };
 
-  const save = async () => {
-    if (!form.title) return;
+  const handleSave = async () => {
+    const values = await form.validateFields();
+    if (!values.title) return;
     setSaving(true);
     try {
-      if (modal === "create") {
-        await post("/news", form);
+      if (editId) {
+        await putReq(`/news/${editId}`, values);
+        message.success("Đã lưu bài viết!");
       } else {
-        await putReq(`/news/${editId}`, form);
+        await post("/news", values);
+        message.success("Đã thêm bài viết!");
       }
-      setAlert({ type: "success", msg: "Đã lưu bài viết!" });
-      closeModal();
+      setModalOpen(false);
       fetchData();
     } catch (e: any) {
-      setAlert({ type: "error", msg: e?.message || "Lỗi" });
+      if (e?.message) message.error(e.message);
     } finally {
       setSaving(false);
-      setTimeout(() => setAlert(null), 3000);
     }
   };
 
   const remove = async (id: number) => {
-    if (!confirm("Xóa bài viết này?")) return;
     await del(`/news/${id}`);
+    message.success("Đã xóa!");
     fetchData();
   };
 
-  const f = (k: keyof typeof form, v: any) => setForm(p => ({ ...p, [k]: v }));
+  const fmtDate = (d: string | null) => d ? new Date(d).toLocaleDateString("vi-VN") : '—';
 
   return (
     <div>
-      <div className="page-header">
+      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1 className="page-title">Tin tức</h1>
-          <p className="page-subtitle">{news.length} bài viết</p>
+          <Title level={4} style={{ margin: 0 }}>Tin tức</Title>
+          <Text type="secondary">{news.length} bài viết</Text>
         </div>
-        <button className="btn btn-primary" onClick={openCreate}>＋ Thêm bài viết</button>
+        <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>Thêm bài viết</Button>
       </div>
 
-      {alert && <div className={`alert alert-${alert.type}`}>{alert.msg}</div>}
-
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 20 }}>
-        {loading ? (
-          <div className="loading-wrapper"><div className="spinner" /></div>
-        ) : news.length === 0 ? (
-          <div className="empty-state">
-            <span className="empty-icon">📰</span>
-            <span className="empty-title">Chưa có bài viết nào</span>
-          </div>
-        ) : (
-          news.map(n => (
-            <div key={n.id} style={{
-              background: "linear-gradient(135deg, #1e2235, #1a1d2e)",
-              border: "1px solid rgba(99,102,241,0.15)",
-              borderRadius: 16, overflow: "hidden",
-              transition: "all 0.3s"
-            }}>
-              {n.image && (
-                <img src={n.image} alt={n.title || ""} style={{ width: "100%", height: 180, objectFit: "cover" }} />
-              )}
-              <div style={{ padding: 16 }}>
-                <div style={{ fontSize: 12, color: "#64748b", marginBottom: 8 }}>
-                  {n.publishedAt ? new Date(n.publishedAt).toLocaleDateString("vi-VN") : "—"}
-                </div>
-                <div style={{ fontWeight: 600, color: "#e2e8f0", marginBottom: 8, lineHeight: 1.4 }}>{n.title}</div>
-                <div style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.5, marginBottom: 16,
-                  display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: 60 }}><Spin size="large" /></div>
+      ) : news.length === 0 ? (
+        <Empty description="Chưa có bài viết nào" />
+      ) : (
+        <Row gutter={[16, 16]}>
+          {news.map(n => (
+            <Col xs={24} sm={12} lg={8} key={n.id}>
+              <Card
+                hoverable
+                cover={n.image && (
+                  <img alt={n.title || ''} src={n.image} style={{ height: 180, objectFit: 'cover' }} />
+                )}
+                actions={[
+                  <Button type="link" icon={<EditOutlined />} onClick={() => openEdit(n)}>Sửa</Button>,
+                  <Popconfirm title="Xóa bài viết này?" onConfirm={() => remove(n.id)} okText="Xóa" cancelText="Hủy">
+                    <Button type="link" danger icon={<DeleteOutlined />}>Xóa</Button>
+                  </Popconfirm>,
+                ]}
+              >
+                <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+                  {fmtDate(n.publishedAt)}
+                </Text>
+                <Title level={5} style={{ margin: '0 0 8px', lineHeight: 1.4 }}>{n.title}</Title>
+                <Text type="secondary" style={{ fontSize: 13 }} ellipsis={{ tooltip: n.excerpt }}>
                   {n.excerpt}
-                </div>
-                <div style={{ display: "flex", gap: 8 }}>
-                  <button className="btn btn-sm btn-secondary" style={{ flex: 1 }} onClick={() => openEdit(n)}>✏️ Sửa</button>
-                  <button className="btn btn-sm btn-danger" onClick={() => remove(n.id)}>🗑️</button>
-                </div>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
-
-      {modal && (
-        <div className="modal-backdrop" onClick={closeModal}>
-          <div className="modal" style={{ maxWidth: 680 }} onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <span className="modal-title">{modal === "create" ? "Thêm bài viết" : "Sửa bài viết"}</span>
-              <button className="modal-close" onClick={closeModal}>✕</button>
-            </div>
-            <div className="modal-body">
-              <div className="form-grid cols-1">
-                <div className="form-group">
-                  <label className="form-label">Tiêu đề *</label>
-                  <input className="form-control" value={form.title || ""} onChange={e => f("title", e.target.value)} placeholder="Tiêu đề bài viết..." />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Slug</label>
-                  <input className="form-control" value={form.slug || ""} onChange={e => f("slug", e.target.value)} placeholder="tin-tuc-moi" />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Tóm tắt</label>
-                  <textarea className="form-control" value={form.excerpt || ""} onChange={e => f("excerpt", e.target.value)} placeholder="Tóm tắt nội dung..." style={{ minHeight: 80 }} />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">URL ảnh</label>
-                  <input className="form-control" value={form.image || ""} onChange={e => f("image", e.target.value)} placeholder="https://..." />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Tác giả</label>
-                  <input className="form-control" value={form.author || ""} onChange={e => f("author", e.target.value)} placeholder="ZestFoot" />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Ngày đăng</label>
-                  <input className="form-control" type="datetime-local" value={form.publishedAt || ""} onChange={e => f("publishedAt", e.target.value)} />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Nội dung</label>
-                  <textarea className="form-control" value={form.content || ""} onChange={e => f("content", e.target.value)} placeholder="Nội dung đầy đủ..." style={{ minHeight: 160 }} />
-                </div>
-              </div>
-            </div>
-            <div className="modal-footer">
-              <button className="btn btn-secondary" onClick={closeModal}>Hủy</button>
-              <button className="btn btn-primary" onClick={save} disabled={saving}>{saving ? "Đang lưu..." : "Lưu"}</button>
-            </div>
-          </div>
-        </div>
+                </Text>
+              </Card>
+            </Col>
+          ))}
+        </Row>
       )}
+
+      <Modal
+        title={editId ? "Sửa bài viết" : "Thêm bài viết"}
+        open={modalOpen}
+        onCancel={() => setModalOpen(false)}
+        onOk={handleSave}
+        confirmLoading={saving}
+        okText="Lưu"
+        cancelText="Hủy"
+        width={680}
+      >
+        <Form form={form} layout="vertical" initialValues={INITIAL}>
+          <Form.Item name="title" label="Tiêu đề" rules={[{ required: true, message: 'Nhập tiêu đề' }]}>
+            <Input placeholder="Tiêu đề bài viết..." />
+          </Form.Item>
+          <Form.Item name="slug" label="Slug">
+            <Input placeholder="tin-tuc-moi" />
+          </Form.Item>
+          <Form.Item name="excerpt" label="Tóm tắt">
+            <TextArea rows={3} placeholder="Tóm tắt nội dung..." />
+          </Form.Item>
+          <Form.Item name="image" label="URL ảnh">
+            <Input placeholder="https://..." />
+          </Form.Item>
+          <Space style={{ width: '100%' }} size={16}>
+            <Form.Item name="author" label="Tác giả" style={{ flex: 1 }}>
+              <Input placeholder="ZestFoot" />
+            </Form.Item>
+            <Form.Item name="publishedAt" label="Ngày đăng" style={{ flex: 1 }}>
+              <Input type="datetime-local" />
+            </Form.Item>
+          </Space>
+          <Form.Item name="content" label="Nội dung">
+            <TextArea rows={6} placeholder="Nội dung đầy đủ..." />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 }

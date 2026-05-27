@@ -1,42 +1,31 @@
 
 import { useEffect, useState, useCallback } from "react";
+import { Table, Button, Modal, Form, Input, InputNumber, Select, Tag, Switch, Space, Popconfirm, message, Typography } from "antd";
+import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { get, post, put as putReq, del } from "@/services/http";
 
+const { Title, Text } = Typography;
+
 interface Coupon {
-  id: number;
-  code: string;
-  discountType: "percent" | "fixed";
-  discountValue: number;
-  minOrderValue: number | null;
-  maxDiscountAmount: number | null;
-  startDate: string | null;
-  endDate: string | null;
-  usageLimit: number | null;
-  usedCount: number | null;
-  isActive: boolean | null;
-  createdAt: string | null;
+  id: number; code: string; discountType: "percent" | "fixed"; discountValue: number;
+  minOrderValue: number | null; maxDiscountAmount: number | null;
+  startDate: string | null; endDate: string | null;
+  usageLimit: number | null; usedCount: number | null;
+  isActive: boolean | null; createdAt: string | null;
 }
 
-const EMPTY: Omit<Coupon, "id" | "usedCount" | "createdAt"> = {
-  code: "",
-  discountType: "percent",
-  discountValue: 10,
-  minOrderValue: 0,
-  maxDiscountAmount: null,
-  startDate: null,
-  endDate: null,
-  usageLimit: null,
-  isActive: true,
+const INITIAL: any = {
+  code: "", discountType: "percent", discountValue: 10, minOrderValue: 0,
+  maxDiscountAmount: null, startDate: null, endDate: null, usageLimit: null, isActive: true,
 };
 
 export default function CouponsAdmin() {
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [loading, setLoading] = useState(true);
-  const [modal, setModal] = useState<"create" | "edit" | null>(null);
-  const [form, setForm] = useState<typeof EMPTY>(EMPTY);
+  const [modalOpen, setModalOpen] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
-  const [alert, setAlert] = useState<{ type: "success" | "error"; msg: string } | null>(null);
+  const [form] = Form.useForm();
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -51,212 +40,170 @@ export default function CouponsAdmin() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  const openCreate = () => { setForm(EMPTY); setModal("create"); setEditId(null); };
-  const openEdit = (c: Coupon) => {
-    setForm({
-      code: c.code, discountType: c.discountType, discountValue: c.discountValue,
-      minOrderValue: c.minOrderValue, maxDiscountAmount: c.maxDiscountAmount,
-      startDate: c.startDate, endDate: c.endDate, usageLimit: c.usageLimit, isActive: c.isActive,
-    });
-    setModal("edit"); setEditId(c.id);
-  };
-  const closeModal = () => setModal(null);
+  const openCreate = () => { setEditId(null); form.resetFields(); setModalOpen(true); };
 
-  const save = async () => {
-    if (!form.code) return;
+  const openEdit = (c: Coupon) => {
+    setEditId(c.id);
+    form.setFieldsValue(c);
+    setModalOpen(true);
+  };
+
+  const handleSave = async () => {
+    const values = await form.validateFields();
+    if (!values.code) return;
     setSaving(true);
     try {
-      if (modal === "create") {
-        await post("/coupons", form);
+      if (editId) {
+        await putReq(`/coupons/${editId}`, values);
+        message.success("Đã lưu coupon!");
       } else {
-        await putReq(`/coupons/${editId}`, form);
+        await post("/coupons", values);
+        message.success("Đã tạo coupon!");
       }
-      setAlert({ type: "success", msg: "Đã lưu coupon!" });
-      closeModal();
+      setModalOpen(false);
       fetchData();
     } catch (e: any) {
-      setAlert({ type: "error", msg: e?.message || "Lỗi" });
+      if (e?.message) message.error(e.message);
     } finally {
       setSaving(false);
-      setTimeout(() => setAlert(null), 3000);
     }
   };
 
   const remove = async (id: number) => {
-    if (!confirm("Xóa coupon này?")) return;
     try {
       await del(`/coupons/${id}`);
-      setAlert({ type: "success", msg: "Đã xóa!" });
+      message.success("Đã xóa!");
       fetchData();
     } catch (e: any) {
-      setAlert({ type: "error", msg: e?.message || "Lỗi" });
+      message.error(e?.message || "Lỗi");
     }
-    setTimeout(() => setAlert(null), 3000);
   };
 
   const toggle = async (id: number, val: boolean) => {
+    const target = coupons.find(c => c.id === id);
+    if (!target) return;
     try {
-      const target = coupons.find(c => c.id === id);
-      if (!target) return;
       await putReq(`/coupons/${id}`, { ...target, isActive: val });
       setCoupons(cs => cs.map(c => c.id === id ? { ...c, isActive: val } : c));
     } catch (e: any) {
-      setAlert({ type: "error", msg: e?.message || "Lỗi" });
-      setTimeout(() => setAlert(null), 3000);
+      message.error(e?.message || "Lỗi");
     }
   };
 
-  const f = (k: keyof typeof form, v: any) => setForm(p => ({ ...p, [k]: v }));
-  const fmtDate = (d: string | null) => d ? new Date(d).toLocaleDateString("vi-VN") : "—";
+  const fmtDate = (d: string | null) => d ? new Date(d).toLocaleDateString("vi-VN") : '—';
+
+  const columns = [
+    { title: 'Mã', dataIndex: 'code', key: 'code', render: (v: string) => <Text code strong style={{ color: '#818cf8', fontSize: 14 }}>{v}</Text> },
+    {
+      title: 'Loại', dataIndex: 'discountType', key: 'discountType',
+      render: (v: string) => <Tag color={v === 'percent' ? 'blue' : 'purple'}>{v === 'percent' ? '%' : 'Cố định'}</Tag>,
+    },
+    {
+      title: 'Giá trị', key: 'value',
+      render: (_: any, r: Coupon) => (
+        <Text strong style={{ color: '#52c41a' }}>
+          {r.discountType === 'percent' ? `${r.discountValue}%` : `${(r.discountValue || 0).toLocaleString()}₫`}
+        </Text>
+      ),
+    },
+    {
+      title: 'Đơn tối thiểu', dataIndex: 'minOrderValue', key: 'minOrderValue',
+      render: (v: number | null) => v ? `${v.toLocaleString()}₫` : '—',
+    },
+    { title: 'Hạn dùng', dataIndex: 'endDate', key: 'endDate', render: (d: string | null) => fmtDate(d) },
+    {
+      title: 'Đã dùng', key: 'used',
+      render: (_: any, r: Coupon) => r.usageLimit
+        ? `${r.usedCount || 0}/${r.usageLimit}`
+        : <Text type="secondary">Không giới hạn</Text>,
+    },
+    {
+      title: 'Trạng thái', key: 'status',
+      render: (_: any, r: Coupon) => (
+        <Switch
+          checked={!!r.isActive}
+          onChange={(v) => toggle(r.id, v)}
+          checkedChildren="Hoạt động"
+          unCheckedChildren="Tắt"
+        />
+      ),
+    },
+    {
+      title: '', key: 'action',
+      render: (_: any, r: Coupon) => (
+        <Space>
+          <Button type="link" icon={<EditOutlined />} onClick={() => openEdit(r)} />
+          <Popconfirm title="Xóa coupon này?" onConfirm={() => remove(r.id)} okText="Xóa" cancelText="Hủy">
+            <Button type="link" danger icon={<DeleteOutlined />} />
+          </Popconfirm>
+        </Space>
+      ),
+    },
+  ];
 
   return (
     <div>
-      <div className="page-header">
+      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1 className="page-title">Mã giảm giá</h1>
-          <p className="page-subtitle">{coupons.length} coupon</p>
+          <Title level={4} style={{ margin: 0 }}>Mã giảm giá</Title>
+          <Text type="secondary">{coupons.length} coupon</Text>
         </div>
-        <button className="btn btn-primary" onClick={openCreate}>＋ Tạo coupon</button>
+        <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>Tạo coupon</Button>
       </div>
 
-      {alert && <div className={`alert alert-${alert.type}`}>{alert.msg}</div>}
+      <Table dataSource={coupons} columns={columns} rowKey="id" loading={loading} size="middle" pagination={false}
+        locale={{ emptyText: 'Chưa có coupon nào' }} />
 
-      <div className="admin-table-wrapper">
-        {loading ? (
-          <div className="loading-wrapper"><div className="spinner" /></div>
-        ) : coupons.length === 0 ? (
-          <div className="empty-state">
-            <span className="empty-icon">🎟️</span>
-            <span className="empty-title">Chưa có coupon nào</span>
-          </div>
-        ) : (
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>Mã</th>
-                <th>Loại</th>
-                <th>Giá trị</th>
-                <th>Đơn tối thiểu</th>
-                <th>Hạn dùng</th>
-                <th>Đã dùng</th>
-                <th>Trạng thái</th>
-                <th>Thao tác</th>
-              </tr>
-            </thead>
-            <tbody>
-              {coupons.map(c => (
-                <tr key={c.id}>
-                  <td>
-                    <span style={{ fontFamily: "monospace", color: "#818cf8", fontWeight: 700, fontSize: 14 }}>
-                      {c.code}
-                    </span>
-                  </td>
-                  <td>
-                    <span className={`badge ${c.discountType === "percent" ? "badge-info" : "badge-purple"}`}>
-                      {c.discountType === "percent" ? "%" : "Cố định"}
-                    </span>
-                  </td>
-                  <td style={{ fontWeight: 600, color: "#34d399" }}>
-                    {c.discountType === "percent" ? `${c.discountValue}%` : `${(c.discountValue || 0).toLocaleString()}₫`}
-                  </td>
-                  <td>{c.minOrderValue ? c.minOrderValue.toLocaleString() + "₫" : "—"}</td>
-                  <td style={{ color: "#64748b", fontSize: 13 }}>{fmtDate(c.endDate)}</td>
-                  <td>
-                    {c.usageLimit
-                      ? <span style={{ color: "#94a3b8" }}>{c.usedCount || 0}/{c.usageLimit}</span>
-                      : <span style={{ color: "#64748b" }}>Không giới hạn</span>}
-                  </td>
-                  <td>
-                    <button
-                      className={`badge ${c.isActive ? "badge-success" : "badge-gray"}`}
-                      style={{ cursor: "pointer", border: "none" }}
-                      onClick={() => toggle(c.id, !c.isActive)}>
-                      {c.isActive ? "Hoạt động" : "Tắt"}
-                    </button>
-                  </td>
-                  <td>
-                    <div style={{ display: "flex", gap: 6 }}>
-                      <button className="btn-icon" onClick={() => openEdit(c)}>✏️</button>
-                      <button className="btn-icon danger" onClick={() => remove(c.id)}>🗑️</button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
-
-      {modal && (
-        <div className="modal-backdrop" onClick={closeModal}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <span className="modal-title">{modal === "create" ? "Tạo coupon" : "Sửa coupon"}</span>
-              <button className="modal-close" onClick={closeModal}>✕</button>
-            </div>
-            <div className="modal-body">
-              <div className="form-grid">
-                <div className="form-group form-full">
-                  <label className="form-label">Mã coupon *</label>
-                  <input className="form-control" value={form.code}
-                    onChange={e => f("code", e.target.value.toUpperCase())} placeholder="SUMMER2024" />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Loại giảm giá</label>
-                  <select className="form-control" value={form.discountType}
-                    onChange={e => f("discountType", e.target.value)}>
-                    <option value="percent">Phần trăm (%)</option>
-                    <option value="fixed">Cố định (₫)</option>
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Giá trị</label>
-                  <input className="form-control" type="number" value={form.discountValue}
-                    onChange={e => f("discountValue", Number(e.target.value))} />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Đơn tối thiểu (₫)</label>
-                  <input className="form-control" type="number" value={form.minOrderValue || ""}
-                    onChange={e => f("minOrderValue", Number(e.target.value))} placeholder="0" />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Giảm tối đa (₫)</label>
-                  <input className="form-control" type="number" value={form.maxDiscountAmount || ""}
-                    onChange={e => f("maxDiscountAmount", Number(e.target.value))} placeholder="Không giới hạn" />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Ngày bắt đầu</label>
-                  <input className="form-control" type="datetime-local"
-                    value={form.startDate || ""}
-                    onChange={e => f("startDate", e.target.value)} />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Ngày kết thúc</label>
-                  <input className="form-control" type="datetime-local"
-                    value={form.endDate || ""}
-                    onChange={e => f("endDate", e.target.value)} />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Giới hạn sử dụng</label>
-                  <input className="form-control" type="number" value={form.usageLimit || ""}
-                    onChange={e => f("usageLimit", e.target.value ? Number(e.target.value) : null)} placeholder="Không giới hạn" />
-                </div>
-                <div className="form-group">
-                  <label className="form-check" style={{ marginTop: 28 }}>
-                    <input type="checkbox" checked={Boolean(form.isActive)}
-                      onChange={e => f("isActive", e.target.checked)} />
-                    <span style={{ color: "#cbd5e1", fontSize: "0.875rem" }}>Kích hoạt ngay</span>
-                  </label>
-                </div>
-              </div>
-            </div>
-            <div className="modal-footer">
-              <button className="btn btn-secondary" onClick={closeModal}>Hủy</button>
-              <button className="btn btn-primary" onClick={save} disabled={saving}>{saving ? "Đang lưu..." : "Lưu"}</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Modal
+        title={editId ? "Sửa coupon" : "Tạo coupon"}
+        open={modalOpen}
+        onCancel={() => setModalOpen(false)}
+        onOk={handleSave}
+        confirmLoading={saving}
+        okText="Lưu"
+        cancelText="Hủy"
+        width={560}
+      >
+        <Form form={form} layout="vertical" initialValues={INITIAL}>
+          <Form.Item name="code" label="Mã coupon" rules={[{ required: true, message: 'Nhập mã coupon' }]}>
+            <Input placeholder="SUMMER2024" style={{ textTransform: 'uppercase' }}
+              onChange={(e) => form.setFieldValue('code', e.target.value.toUpperCase())} />
+          </Form.Item>
+          <Space style={{ width: '100%' }} size={16}>
+            <Form.Item name="discountType" label="Loại giảm giá" style={{ flex: 1 }}>
+              <Select>
+                <Select.Option value="percent">Phần trăm (%)</Select.Option>
+                <Select.Option value="fixed">Cố định (₫)</Select.Option>
+              </Select>
+            </Form.Item>
+            <Form.Item name="discountValue" label="Giá trị" style={{ flex: 1 }}>
+              <InputNumber style={{ width: '100%' }} min={0} />
+            </Form.Item>
+          </Space>
+          <Space style={{ width: '100%' }} size={16}>
+            <Form.Item name="minOrderValue" label="Đơn tối thiểu (₫)" style={{ flex: 1 }}>
+              <InputNumber style={{ width: '100%' }} min={0} placeholder="0" />
+            </Form.Item>
+            <Form.Item name="maxDiscountAmount" label="Giảm tối đa (₫)" style={{ flex: 1 }}>
+              <InputNumber style={{ width: '100%' }} min={0} placeholder="Không giới hạn" />
+            </Form.Item>
+          </Space>
+          <Space style={{ width: '100%' }} size={16}>
+            <Form.Item name="startDate" label="Ngày bắt đầu" style={{ flex: 1 }}>
+              <Input type="datetime-local" />
+            </Form.Item>
+            <Form.Item name="endDate" label="Ngày kết thúc" style={{ flex: 1 }}>
+              <Input type="datetime-local" />
+            </Form.Item>
+          </Space>
+          <Form.Item name="usageLimit" label="Giới hạn sử dụng">
+            <InputNumber style={{ width: '100%' }} min={0} placeholder="Không giới hạn" />
+          </Form.Item>
+          <Form.Item name="isActive" label="Kích hoạt" valuePropName="checked">
+            <Switch />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 }

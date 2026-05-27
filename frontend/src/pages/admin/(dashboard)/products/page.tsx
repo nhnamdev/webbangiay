@@ -1,36 +1,29 @@
 
 import { useEffect, useState, useCallback } from "react";
+import { Table, Button, Modal, Form, Input, InputNumber, Select, Tag, Space, Popconfirm, message, Spin, Typography } from "antd";
+import { PlusOutlined, EditOutlined, DeleteOutlined, SearchOutlined } from '@ant-design/icons';
 import { get, post, put as putReq, del } from "@/services/http";
 
+const { Title, Text } = Typography;
+
 interface Product {
-  id: number;
-  name: string;
-  brand: string | null;
-  price: number | null;
-  salePrice: number | null;
-  image: string | null;
-  isNew: boolean | null;
-  isSale: boolean | null;
-  isTrending: boolean | null;
-  isAsicsExclusive: boolean | null;
-  category: string | null;
-  subCategory: string | null;
-  gender: string | null;
+  id: number; name: string; brand: string | null; price: number | null;
+  salePrice: number | null; image: string | null; isNew: boolean | null;
+  isSale: boolean | null; isTrending: boolean | null; isAsicsExclusive: boolean | null;
+  category: string | null; subCategory: string | null; gender: string | null;
 }
 
 const EMPTY: Omit<Product, "id"> = {
-  name: "",
-  brand: null,
-  price: null,
-  salePrice: null,
-  image: null,
-  isNew: false,
-  isSale: false,
-  isTrending: false,
-  isAsicsExclusive: false,
-  category: null,
-  subCategory: null,
-  gender: null,
+  name: "", brand: null, price: null, salePrice: null, image: null,
+  isNew: false, isSale: false, isTrending: false, isAsicsExclusive: false,
+  category: null, subCategory: null, gender: null,
+};
+
+const tagColors: Record<string, string> = {
+  isNew: 'green', isSale: 'gold', isTrending: 'blue', isAsicsExclusive: 'purple',
+};
+const tagLabels: Record<string, string> = {
+  isNew: 'Mới', isSale: 'Sale', isTrending: 'Trending', isAsicsExclusive: 'ASICS Exclusive',
 };
 
 const PAGE_SIZE = 10;
@@ -41,11 +34,10 @@ export default function ProductsAdmin() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
-  const [modal, setModal] = useState<"create" | "edit" | null>(null);
-  const [form, setForm] = useState<Omit<Product, "id">>(EMPTY);
+  const [modalOpen, setModalOpen] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
-  const [alert, setAlert] = useState<{ type: "success" | "error"; msg: string } | null>(null);
+  const [form] = Form.useForm();
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -64,219 +56,198 @@ export default function ProductsAdmin() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  const openCreate = () => { setForm(EMPTY); setModal("create"); setEditId(null); };
-  const openEdit = (p: Product) => { setForm({ ...p }); setModal("edit"); setEditId(p.id); };
-  const closeModal = () => { setModal(null); };
+  const openCreate = () => {
+    setEditId(null);
+    form.resetFields();
+    setModalOpen(true);
+  };
 
-  const save = async () => {
-    if (!form.name) return;
+  const openEdit = (p: Product) => {
+    setEditId(p.id);
+    form.setFieldsValue(p);
+    setModalOpen(true);
+  };
+
+  const handleSave = async () => {
+    const values = await form.validateFields();
     setSaving(true);
     try {
-      if (modal === "create") {
-        await post("/products", form);
+      if (editId) {
+        await putReq(`/products/${editId}`, values);
+        message.success("Đã cập nhật sản phẩm!");
       } else {
-        await putReq(`/products/${editId}`, form);
+        await post("/products", values);
+        message.success("Đã thêm sản phẩm!");
       }
-      setAlert({ type: "success", msg: modal === "create" ? "Đã thêm sản phẩm!" : "Đã cập nhật!" });
-      closeModal();
+      setModalOpen(false);
       fetchData();
     } catch (e: any) {
-      setAlert({ type: "error", msg: e?.message || "Lỗi" });
+      if (e?.message) message.error(e.message);
     } finally {
       setSaving(false);
-      setTimeout(() => setAlert(null), 3000);
     }
   };
 
   const remove = async (id: number) => {
-    if (!confirm("Xóa sản phẩm này?")) return;
     try {
       await del(`/products/${id}`);
-      setAlert({ type: "success", msg: "Đã xóa sản phẩm" });
+      message.success("Đã xóa sản phẩm");
       fetchData();
     } catch (e: any) {
-      setAlert({ type: "error", msg: e?.message || "Lỗi" });
+      message.error(e?.message || "Lỗi");
     }
-    setTimeout(() => setAlert(null), 3000);
   };
 
-  const totalPages = Math.ceil(total / PAGE_SIZE);
-  const f = (k: keyof typeof form, v: any) => setForm((p) => ({ ...p, [k]: v }));
+  const columns = [
+    { title: 'ID', dataIndex: 'id', key: 'id', width: 70, render: (id: number) => <Text code>#{id}</Text> },
+    {
+      title: 'Ảnh', key: 'image', width: 60,
+      render: (_: any, r: Product) => r.image
+        ? <img src={r.image} alt="" style={{ width: 40, height: 40, borderRadius: 6, objectFit: 'cover' }} />
+        : <span style={{ fontSize: 20 }}>👟</span>,
+    },
+    { title: 'Tên sản phẩm', dataIndex: 'name', key: 'name', ellipsis: true },
+    { title: 'Thương hiệu', dataIndex: 'brand', key: 'brand', width: 120, render: (v: string | null) => v || '—' },
+    {
+      title: 'Giá', dataIndex: 'price', key: 'price', width: 110,
+      render: (v: number | null) => v ? v.toLocaleString("vi-VN") + "₫" : '—',
+    },
+    {
+      title: 'Giá sale', dataIndex: 'salePrice', key: 'salePrice', width: 110,
+      render: (v: number | null) => v ? <Text type="danger">{v.toLocaleString("vi-VN")}₫</Text> : '—',
+    },
+    { title: 'Danh mục', dataIndex: 'category', key: 'category', width: 100, render: (v: string | null) => v || '—' },
+    {
+      title: 'Giới tính', dataIndex: 'gender', key: 'gender', width: 80,
+      render: (v: string | null) => {
+        if (!v) return '—';
+        const map: Record<string, string> = { men: 'Nam', women: 'Nữ', unisex: 'Unisex', kids: 'Trẻ em' };
+        return map[v] || v;
+      },
+    },
+    {
+      title: 'Tags', key: 'tags', width: 160,
+      render: (_: any, r: Product) => (
+        <Space size={4} wrap>
+          {Object.entries(tagColors).map(([key, color]) =>
+            r[key as keyof Product]
+              ? <Tag key={key} color={color}>{tagLabels[key]}</Tag>
+              : null
+          )}
+        </Space>
+      ),
+    },
+    {
+      title: '', key: 'action', width: 80,
+      render: (_: any, r: Product) => (
+        <Space>
+          <Button type="link" icon={<EditOutlined />} onClick={() => openEdit(r)} />
+          <Popconfirm title="Xóa sản phẩm này?" onConfirm={() => remove(r.id)} okText="Xóa" cancelText="Hủy">
+            <Button type="link" danger icon={<DeleteOutlined />} />
+          </Popconfirm>
+        </Space>
+      ),
+    },
+  ];
 
   return (
     <div>
-      <div className="page-header">
+      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1 className="page-title">Sản phẩm</h1>
-          <p className="page-subtitle">{total} sản phẩm trong hệ thống</p>
+          <Title level={4} style={{ margin: 0 }}>Sản phẩm</Title>
+          <Text type="secondary">{total} sản phẩm trong hệ thống</Text>
         </div>
-        <button className="btn btn-primary" onClick={openCreate}>＋ Thêm sản phẩm</button>
+        <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>Thêm sản phẩm</Button>
       </div>
 
-      {alert && <div className={`alert alert-${alert.type}`}>{alert.msg}</div>}
-
-      <div className="admin-table-wrapper">
-        <div className="table-toolbar">
-          <div className="table-search">
-            <span className="search-icon">🔍</span>
-            <input
-              placeholder="Tìm kiếm sản phẩm..."
-              value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            />
-          </div>
-        </div>
-
-        {loading ? (
-          <div className="loading-wrapper"><div className="spinner" /><div className="loading-text">Đang tải...</div></div>
-        ) : products.length === 0 ? (
-          <div className="empty-state">
-            <span className="empty-icon">👟</span>
-            <span className="empty-title">Không tìm thấy sản phẩm</span>
-          </div>
-        ) : (
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Ảnh</th>
-                <th>Tên sản phẩm</th>
-                <th>Thương hiệu</th>
-                <th>Giá</th>
-                <th>Giá sale</th>
-                <th>Danh mục</th>
-                <th>Giới tính</th>
-                <th>Tags</th>
-                <th>Thao tác</th>
-              </tr>
-            </thead>
-            <tbody>
-              {products.map((p) => (
-                <tr key={p.id}>
-                  <td>#{p.id}</td>
-                  <td>
-                    {p.image ? (
-                      <img src={p.image} alt={p.name} className="product-img" />
-                    ) : (
-                      <div className="product-img" style={{ display: "flex", alignItems: "center", justifyContent: "center", color: "#475569" }}>👟</div>
-                    )}
-                  </td>
-                  <td style={{ maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.name}</td>
-                  <td>{p.brand || "—"}</td>
-                  <td>{p.price ? p.price.toLocaleString("vi-VN") + "₫" : "—"}</td>
-                  <td>{p.salePrice ? p.salePrice.toLocaleString("vi-VN") + "₫" : "—"}</td>
-                  <td>{p.category || "—"}</td>
-                  <td>{p.gender || "—"}</td>
-                  <td>
-                    <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-                      {p.isNew && <span className="badge badge-success">Mới</span>}
-                      {p.isSale && <span className="badge badge-warning">Sale</span>}
-                      {p.isTrending && <span className="badge badge-info">Trending</span>}
-                    </div>
-                  </td>
-                  <td>
-                    <div style={{ display: "flex", gap: 6 }}>
-                      <button className="btn-icon" onClick={() => openEdit(p)} title="Sửa">✏️</button>
-                      <button className="btn-icon danger" onClick={() => remove(p.id)} title="Xóa">🗑️</button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <Table
+        dataSource={products}
+        columns={columns}
+        rowKey="id"
+        loading={loading}
+        size="middle"
+        pagination={{
+          current: page,
+          pageSize: PAGE_SIZE,
+          total,
+          onChange: (p) => setPage(p),
+          showTotal: (t) => `Tổng ${t} sản phẩm`,
+        }}
+        locale={{ emptyText: 'Không tìm thấy sản phẩm' }}
+        title={() => (
+          <Input
+            placeholder="Tìm kiếm sản phẩm..."
+            prefix={<SearchOutlined />}
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            allowClear
+            style={{ maxWidth: 320 }}
+          />
         )}
+      />
 
-        {totalPages > 1 && (
-          <div className="pagination">
-            <span className="pagination-info">Trang {page}/{totalPages} · {total} sản phẩm</span>
-            <div className="pagination-btns">
-              <button className="page-btn" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>◀</button>
-              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                const n = Math.max(1, Math.min(totalPages - 4, page - 2)) + i;
-                return <button key={n} className={`page-btn ${n === page ? "active" : ""}`} onClick={() => setPage(n)}>{n}</button>;
-              })}
-              <button className="page-btn" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}>▶</button>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {modal && (
-        <div className="modal-backdrop" onClick={closeModal}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <span className="modal-title">{modal === "create" ? "Thêm sản phẩm" : "Sửa sản phẩm"}</span>
-              <button className="modal-close" onClick={closeModal}>✕</button>
-            </div>
-            <div className="modal-body">
-              <div className="form-grid">
-                <div className="form-group form-full">
-                  <label className="form-label">Tên sản phẩm *</label>
-                  <input className="form-control" value={form.name} onChange={e => f("name", e.target.value)} placeholder="Tên sản phẩm..." />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Thương hiệu</label>
-                  <input className="form-control" value={form.brand || ""} onChange={e => f("brand", e.target.value)} placeholder="Nike, Adidas..." />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Danh mục</label>
-                  <input className="form-control" value={form.category || ""} onChange={e => f("category", e.target.value)} placeholder="running, lifestyle..." />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Giá (₫)</label>
-                  <input className="form-control" type="number" value={form.price || ""} onChange={e => f("price", Number(e.target.value))} placeholder="1500000" />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Giá sale (₫)</label>
-                  <input className="form-control" type="number" value={form.salePrice || ""} onChange={e => f("salePrice", Number(e.target.value))} placeholder="1200000" />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Giới tính</label>
-                  <select className="form-control" value={form.gender || ""} onChange={e => f("gender", e.target.value)}>
-                    <option value="">-- Chọn --</option>
-                    <option value="men">Nam</option>
-                    <option value="women">Nữ</option>
-                    <option value="unisex">Unisex</option>
-                    <option value="kids">Trẻ em</option>
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Danh mục phụ</label>
-                  <input className="form-control" value={form.subCategory || ""} onChange={e => f("subCategory", e.target.value)} placeholder="sneakers, casual..." />
-                </div>
-                <div className="form-group form-full">
-                  <label className="form-label">URL ảnh</label>
-                  <input className="form-control" value={form.image || ""} onChange={e => f("image", e.target.value)} placeholder="https://..." />
-                </div>
-                <div className="form-group form-full">
-                  <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
-                    {[
-                      { key: "isNew", label: "Mới" },
-                      { key: "isSale", label: "Sale" },
-                      { key: "isTrending", label: "Trending" },
-                      { key: "isAsicsExclusive", label: "ASICS Exclusive" },
-                    ].map(({ key, label }) => (
-                      <label key={key} className="form-check">
-                        <input type="checkbox"
-                          checked={Boolean(form[key as keyof typeof form])}
-                          onChange={e => f(key as keyof typeof form, e.target.checked)}
-                        />
-                        <span style={{ color: "#cbd5e1", fontSize: "0.875rem" }}>{label}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="modal-footer">
-              <button className="btn btn-secondary" onClick={closeModal}>Hủy</button>
-              <button className="btn btn-primary" onClick={save} disabled={saving}>
-                {saving ? "Đang lưu..." : "Lưu"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Modal
+        title={editId ? "Sửa sản phẩm" : "Thêm sản phẩm"}
+        open={modalOpen}
+        onCancel={() => setModalOpen(false)}
+        onOk={handleSave}
+        confirmLoading={saving}
+        okText="Lưu"
+        cancelText="Hủy"
+        width={640}
+      >
+        <Form form={form} layout="vertical" initialValues={EMPTY}>
+          <Form.Item name="name" label="Tên sản phẩm" rules={[{ required: true, message: 'Nhập tên sản phẩm' }]}>
+            <Input placeholder="Tên sản phẩm..." />
+          </Form.Item>
+          <Space style={{ width: '100%' }} size={16}>
+            <Form.Item name="brand" label="Thương hiệu" style={{ flex: 1 }}>
+              <Input placeholder="Nike, Adidas..." />
+            </Form.Item>
+            <Form.Item name="category" label="Danh mục" style={{ flex: 1 }}>
+              <Input placeholder="running, lifestyle..." />
+            </Form.Item>
+          </Space>
+          <Space style={{ width: '100%' }} size={16}>
+            <Form.Item name="price" label="Giá (₫)" style={{ flex: 1 }}>
+              <InputNumber style={{ width: '100%' }} min={0} placeholder="1500000" />
+            </Form.Item>
+            <Form.Item name="salePrice" label="Giá sale (₫)" style={{ flex: 1 }}>
+              <InputNumber style={{ width: '100%' }} min={0} placeholder="1200000" />
+            </Form.Item>
+          </Space>
+          <Space style={{ width: '100%' }} size={16}>
+            <Form.Item name="gender" label="Giới tính" style={{ flex: 1 }}>
+              <Select placeholder="-- Chọn --" allowClear>
+                <Select.Option value="men">Nam</Select.Option>
+                <Select.Option value="women">Nữ</Select.Option>
+                <Select.Option value="unisex">Unisex</Select.Option>
+                <Select.Option value="kids">Trẻ em</Select.Option>
+              </Select>
+            </Form.Item>
+            <Form.Item name="subCategory" label="Danh mục phụ" style={{ flex: 1 }}>
+              <Input placeholder="sneakers, casual..." />
+            </Form.Item>
+          </Space>
+          <Form.Item name="image" label="URL ảnh">
+            <Input placeholder="https://..." />
+          </Form.Item>
+          <Form.Item label="Tags">
+            <Form.Item name="isNew" valuePropName="checked" style={{ display: 'inline-block', marginBottom: 0 }}>
+              <Tag.CheckableTag checked={false} onChange={(c) => form.setFieldValue('isNew', c)}>Mới</Tag.CheckableTag>
+            </Form.Item>
+            <Form.Item name="isSale" valuePropName="checked" style={{ display: 'inline-block', marginBottom: 0, marginLeft: 8 }}>
+              <Tag.CheckableTag checked={false} onChange={(c) => form.setFieldValue('isSale', c)}>Sale</Tag.CheckableTag>
+            </Form.Item>
+            <Form.Item name="isTrending" valuePropName="checked" style={{ display: 'inline-block', marginBottom: 0, marginLeft: 8 }}>
+              <Tag.CheckableTag checked={false} onChange={(c) => form.setFieldValue('isTrending', c)}>Trending</Tag.CheckableTag>
+            </Form.Item>
+            <Form.Item name="isAsicsExclusive" valuePropName="checked" style={{ display: 'inline-block', marginBottom: 0, marginLeft: 8 }}>
+              <Tag.CheckableTag checked={false} onChange={(c) => form.setFieldValue('isAsicsExclusive', c)}>ASICS Exclusive</Tag.CheckableTag>
+            </Form.Item>
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import Page0 from './pages/(auth)/forgot/page';
 import Page1 from './pages/(auth)/login/page';
 import Page2 from './pages/(auth)/register/page';
@@ -36,13 +36,19 @@ import Page34 from './pages/page';
 import Providers from '../components/providers/Providers';
 import ChatBot from '../components/ChatBot/ChatBot';
 import Membership from '../components/Membership/Membership';
+import AdminLayout from '../components/Admin/AdminLayout';
+
+function FloatingButtons() {
+  const location = useLocation();
+  if (location.pathname.startsWith('/admin')) return null;
+  return <><Membership /><ChatBot /></>;
+}
 
 function App() {
   return (
     <BrowserRouter>
         <Providers>
-          <Membership />
-          <ChatBot />
+          <FloatingButtons />
           <Routes>
         <Route path="/forgot" element={<Page0 />} />
         <Route path="/login" element={<Page1 />} />
@@ -67,15 +73,15 @@ function App() {
         <Route path="/rewards/tetris" element={<Page21 />} />
         <Route path="/search" element={<Page22 />} />
         <Route path="/stores" element={<Page23 />} />
-        <Route path="/admin/brands" element={<Page24 />} />
-        <Route path="/admin/coupons" element={<Page25 />} />
-        <Route path="/admin/news" element={<Page26 />} />
-        <Route path="/admin/orders" element={<Page27 />} />
-        <Route path="/admin" element={<Page28 />} />
-        <Route path="/admin/points" element={<Page29 />} />
-        <Route path="/admin/products" element={<Page30 />} />
-        <Route path="/admin/users" element={<Page31 />} />
-        <Route path="/admin/vouchers" element={<Page32 />} />
+        <Route path="/admin" element={<AdminLayout><Page28 /></AdminLayout>} />
+        <Route path="/admin/brands" element={<AdminLayout><Page24 /></AdminLayout>} />
+        <Route path="/admin/coupons" element={<AdminLayout><Page25 /></AdminLayout>} />
+        <Route path="/admin/news" element={<AdminLayout><Page26 /></AdminLayout>} />
+        <Route path="/admin/orders" element={<AdminLayout><Page27 /></AdminLayout>} />
+        <Route path="/admin/points" element={<AdminLayout><Page29 /></AdminLayout>} />
+        <Route path="/admin/products" element={<AdminLayout><Page30 /></AdminLayout>} />
+        <Route path="/admin/users" element={<AdminLayout><Page31 /></AdminLayout>} />
+        <Route path="/admin/vouchers" element={<AdminLayout><Page32 /></AdminLayout>} />
         <Route path="/" element={<Page34 />} />
           </Routes>
         </Providers>

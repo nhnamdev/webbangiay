@@ -1,20 +1,22 @@
 
 import { useEffect, useState, useCallback } from "react";
+import { Table, Button, Modal, Form, Input, Space, Popconfirm, message, Typography } from "antd";
+import { PlusOutlined, EditOutlined, DeleteOutlined, SearchOutlined } from '@ant-design/icons';
 import { get, post, put as putReq, del } from "@/services/http";
 
-interface Brand { id: number; name: string; logo: string | null; slug: string | null; }
+const { Title, Text } = Typography;
 
+interface Brand { id: number; name: string; logo: string | null; slug: string | null; }
 const EMPTY: Omit<Brand, "id"> = { name: "", logo: null, slug: null };
 
 export default function BrandsAdmin() {
   const [brands, setBrands] = useState<Brand[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
-  const [modal, setModal] = useState<"create" | "edit" | null>(null);
-  const [form, setForm] = useState<Omit<Brand, "id">>(EMPTY);
+  const [modalOpen, setModalOpen] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
-  const [alert, setAlert] = useState<{ type: "success" | "error"; msg: string } | null>(null);
+  const [form] = Form.useForm();
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -32,138 +34,122 @@ export default function BrandsAdmin() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  const openCreate = () => { setForm(EMPTY); setModal("create"); setEditId(null); };
-  const openEdit = (b: Brand) => { setForm({ name: b.name, logo: b.logo, slug: b.slug }); setModal("edit"); setEditId(b.id); };
-  const closeModal = () => setModal(null);
+  const openCreate = () => {
+    setEditId(null);
+    form.resetFields();
+    setModalOpen(true);
+  };
 
-  const save = async () => {
-    if (!form.name) return;
+  const openEdit = (b: Brand) => {
+    setEditId(b.id);
+    form.setFieldsValue(b);
+    setModalOpen(true);
+  };
+
+  const handleSave = async () => {
+    const values = await form.validateFields();
+    if (!values.name) return;
     setSaving(true);
     try {
-      if (modal === "create") {
-        await post("/brands", form);
+      if (editId) {
+        await putReq(`/brands/${editId}`, values);
+        message.success("Đã cập nhật!");
       } else {
-        await putReq(`/brands/${editId}`, form);
+        await post("/brands", values);
+        message.success("Đã thêm thương hiệu!");
       }
-      setAlert({ type: "success", msg: modal === "create" ? "Đã thêm thương hiệu!" : "Đã cập nhật!" });
-      closeModal();
+      setModalOpen(false);
       fetchData();
     } catch (e: any) {
-      setAlert({ type: "error", msg: e?.message || "Lỗi" });
+      if (e?.message) message.error(e.message);
     } finally {
       setSaving(false);
-      setTimeout(() => setAlert(null), 3000);
     }
   };
 
   const remove = async (id: number) => {
-    if (!confirm("Xóa thương hiệu này?")) return;
     try {
       await del(`/brands/${id}`);
-      setAlert({ type: "success", msg: "Đã xóa!" });
+      message.success("Đã xóa!");
       fetchData();
     } catch (e: any) {
-      setAlert({ type: "error", msg: e?.message || "Lỗi" });
+      message.error(e?.message || "Lỗi");
     }
-    setTimeout(() => setAlert(null), 3000);
   };
 
-  const f = (k: keyof typeof form, v: any) => setForm(p => ({ ...p, [k]: v }));
+  const columns = [
+    { title: 'ID', dataIndex: 'id', key: 'id', width: 70, render: (id: number) => <Text code>#{id}</Text> },
+    {
+      title: 'Logo', key: 'logo', width: 60,
+      render: (_: any, r: Brand) => r.logo
+        ? <img src={r.logo} alt={r.name} style={{ width: 40, height: 40, objectFit: 'contain', borderRadius: 8, background: '#fff', padding: 4 }} />
+        : <span style={{ fontSize: 20 }}>🏷️</span>,
+    },
+    { title: 'Tên thương hiệu', dataIndex: 'name', key: 'name', render: (v: string) => <Text strong>{v}</Text> },
+    { title: 'Slug', dataIndex: 'slug', key: 'slug', render: (v: string | null) => v ? <Text code>{v}</Text> : '—' },
+    {
+      title: '', key: 'action', width: 80,
+      render: (_: any, r: Brand) => (
+        <Space>
+          <Button type="link" icon={<EditOutlined />} onClick={() => openEdit(r)} />
+          <Popconfirm title="Xóa thương hiệu này?" onConfirm={() => remove(r.id)} okText="Xóa" cancelText="Hủy">
+            <Button type="link" danger icon={<DeleteOutlined />} />
+          </Popconfirm>
+        </Space>
+      ),
+    },
+  ];
 
   return (
     <div>
-      <div className="page-header">
+      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1 className="page-title">Thương hiệu</h1>
-          <p className="page-subtitle">{brands.length} thương hiệu</p>
+          <Title level={4} style={{ margin: 0 }}>Thương hiệu</Title>
+          <Text type="secondary">{brands.length} thương hiệu</Text>
         </div>
-        <button className="btn btn-primary" onClick={openCreate}>＋ Thêm thương hiệu</button>
+        <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>Thêm thương hiệu</Button>
       </div>
 
-      {alert && <div className={`alert alert-${alert.type}`}>{alert.msg}</div>}
-
-      <div className="admin-table-wrapper">
-        <div className="table-toolbar">
-          <div className="table-search">
-            <span className="search-icon">🔍</span>
-            <input placeholder="Tìm thương hiệu..." value={search} onChange={e => { setSearch(e.target.value); }} />
-          </div>
-        </div>
-
-        {loading ? (
-          <div className="loading-wrapper"><div className="spinner" /></div>
-        ) : brands.length === 0 ? (
-          <div className="empty-state">
-            <span className="empty-icon">🏷️</span>
-            <span className="empty-title">Không tìm thấy thương hiệu</span>
-          </div>
-        ) : (
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Logo</th>
-                <th>Tên thương hiệu</th>
-                <th>Slug</th>
-                <th>Thao tác</th>
-              </tr>
-            </thead>
-            <tbody>
-              {brands.map(b => (
-                <tr key={b.id}>
-                  <td>#{b.id}</td>
-                  <td>
-                    {b.logo ? (
-                      <img src={b.logo} alt={b.name} style={{ width: 40, height: 40, objectFit: "contain", borderRadius: 8, background: "#fff", padding: 4 }} />
-                    ) : (
-                      <div style={{ width: 40, height: 40, borderRadius: 8, background: "rgba(99,102,241,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>🏷️</div>
-                    )}
-                  </td>
-                  <td style={{ fontWeight: 600, color: "#e2e8f0" }}>{b.name}</td>
-                  <td><span style={{ color: "#64748b", fontFamily: "monospace", fontSize: 13 }}>{b.slug || "—"}</span></td>
-                  <td>
-                    <div style={{ display: "flex", gap: 6 }}>
-                      <button className="btn-icon" onClick={() => openEdit(b)}>✏️</button>
-                      <button className="btn-icon danger" onClick={() => remove(b.id)}>🗑️</button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <Table
+        dataSource={brands}
+        columns={columns}
+        rowKey="id"
+        loading={loading}
+        pagination={false}
+        locale={{ emptyText: 'Không tìm thấy thương hiệu' }}
+        title={() => (
+          <Input
+            placeholder="Tìm thương hiệu..."
+            prefix={<SearchOutlined />}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            allowClear
+            style={{ maxWidth: 320 }}
+          />
         )}
-      </div>
+      />
 
-      {modal && (
-        <div className="modal-backdrop" onClick={closeModal}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <span className="modal-title">{modal === "create" ? "Thêm thương hiệu" : "Sửa thương hiệu"}</span>
-              <button className="modal-close" onClick={closeModal}>✕</button>
-            </div>
-            <div className="modal-body">
-              <div className="form-grid cols-1">
-                <div className="form-group">
-                  <label className="form-label">Tên thương hiệu *</label>
-                  <input className="form-control" value={form.name} onChange={e => f("name", e.target.value)} placeholder="Nike, Adidas..." />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Slug</label>
-                  <input className="form-control" value={form.slug || ""} onChange={e => f("slug", e.target.value)} placeholder="nike, adidas..." />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">URL Logo</label>
-                  <input className="form-control" value={form.logo || ""} onChange={e => f("logo", e.target.value)} placeholder="https://..." />
-                </div>
-              </div>
-            </div>
-            <div className="modal-footer">
-              <button className="btn btn-secondary" onClick={closeModal}>Hủy</button>
-              <button className="btn btn-primary" onClick={save} disabled={saving}>{saving ? "Đang lưu..." : "Lưu"}</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Modal
+        title={editId ? "Sửa thương hiệu" : "Thêm thương hiệu"}
+        open={modalOpen}
+        onCancel={() => setModalOpen(false)}
+        onOk={handleSave}
+        confirmLoading={saving}
+        okText="Lưu"
+        cancelText="Hủy"
+      >
+        <Form form={form} layout="vertical" initialValues={EMPTY}>
+          <Form.Item name="name" label="Tên thương hiệu" rules={[{ required: true, message: 'Nhập tên thương hiệu' }]}>
+            <Input placeholder="Nike, Adidas..." />
+          </Form.Item>
+          <Form.Item name="slug" label="Slug">
+            <Input placeholder="nike, adidas..." />
+          </Form.Item>
+          <Form.Item name="logo" label="URL Logo">
+            <Input placeholder="https://..." />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 }

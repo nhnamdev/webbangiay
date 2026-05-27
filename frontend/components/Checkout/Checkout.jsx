@@ -2,7 +2,7 @@
 
 // src/components/Checkout/Checkout.jsx
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 
 import { useAuth } from '../../context/AuthContext';
 import { useSelector, useDispatch } from 'react-redux';
@@ -15,20 +15,23 @@ import { CreditCard, Truck, Wallet, Tag, Ticket } from 'lucide-react';
 import ProvinceSelector from './ProvinceSelector';
 
 const Checkout = () => {
-    const searchParams = useSearchParams();
+    const [searchParams] = useSearchParams();
+    const location = useLocation();
     const navigate = useNavigate();
     const cartItems = useSelector(selectCartItems);
     const dispatch = useDispatch();
     const { user } = useAuth();
 
-    // Lấy thông tin sản phẩm từ URL search params (khi mua ngay)
+    const navState = location.state;
+
+    // Lấy thông tin sản phẩm từ URL search params (khi mua ngay) hoặc từ navigation state (từ Cart)
     const productJson = searchParams.get('product');
     const product = productJson ? JSON.parse(decodeURIComponent(productJson)) : null;
     const size = searchParams.get('size');
     const quantity = Number(searchParams.get('quantity')) || 1;
-    const fromCart = searchParams.get('fromCart') === 'true';
+    const fromCart = navState?.fromCart ?? (searchParams.get('fromCart') === 'true');
     const selectedItemsJson = searchParams.get('selectedItems');
-    const selectedItemsFromCart = selectedItemsJson ? JSON.parse(decodeURIComponent(selectedItemsJson)) : null;
+    const selectedItemsFromCart = navState?.selectedItems || (selectedItemsJson ? JSON.parse(decodeURIComponent(selectedItemsJson)) : null);
 
     // --- LOGIC QUAN TRỌNG: Xác định danh sách sản phẩm cần thanh toán ---
     // 1. Nếu từ Cart và có danh sách chọn -> Dùng danh sách chọn
@@ -38,15 +41,16 @@ const Checkout = () => {
         ? (selectedItemsFromCart || cartItems)
         : [{ product, size, quantity }];
 
-    // --- TÍNH LẠI TỔNG TIỀN (SUBTOTAL) ---
-    // Phải tính lại dựa trên checkoutItems vì getCartTotal() trong context sẽ tính hết cả giỏ
-    const subTotal = checkoutItems.reduce((total, item) => {
-        const price = item.product.isSale ? item.product.salePrice : item.product.price;
-        return total + (price * item.quantity);
-    }, 0);
-    // -------------------------------------
+    // --- KIỂM TRA ĐẦU VÀO ---
+    const hasValidItems = checkoutItems.length > 0 && checkoutItems.every(item => item?.product);
 
-    // ... PHẦN CÒN LẠI GIỮ NGUYÊN ...
+    // --- TÍNH LẠI TỔNG TIỀN (SUBTOTAL) ---
+    const subTotal = hasValidItems
+        ? checkoutItems.reduce((total, item) => {
+            const price = item.product.isSale ? item.product.salePrice : item.product.price;
+            return total + (price * item.quantity);
+        }, 0)
+        : 0;
 
     // --- LOGIC MÃ GIẢM GIÁ ---
     const [couponCode, setCouponCode] = useState('');
@@ -172,7 +176,17 @@ const Checkout = () => {
         }
     }, [user]);
 
-    if ((!product && !fromCart) || checkoutItems.length === 0) return null; // Check thêm checkoutItems.length
+    if ((!product && !fromCart) || checkoutItems.length === 0) {
+        return (
+            <div className="checkout-container" style={{ textAlign: 'center', padding: '60px 20px' }}>
+                <h2>Không có sản phẩm để thanh toán</h2>
+                <p>Vui lòng thêm sản phẩm vào giỏ hàng hoặc chọn sản phẩm trước khi thanh toán.</p>
+                <button className="pay-btn" onClick={() => navigate('/')} style={{ marginTop: '20px', width: 'auto' }}>
+                    Tiếp tục mua sắm
+                </button>
+            </div>
+        );
+    }
 
     // Tính toán giảm giá từ điểm
     // 1 Xu = 1000 VND

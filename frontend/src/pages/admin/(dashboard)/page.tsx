@@ -1,39 +1,26 @@
 
 import { useEffect, useState } from "react";
+import { Card, Row, Col, Statistic, Table, Tag, Spin, Typography } from "antd";
+import {
+  ShoppingOutlined, TagOutlined, ShoppingCartOutlined, UserOutlined,
+  GiftOutlined, ReadOutlined, DollarOutlined, ClockCircleOutlined,
+} from '@ant-design/icons';
 import { get } from "@/services/http";
 
+const { Title, Text } = Typography;
+
 interface Stats {
-  products: number;
-  brands: number;
-  orders: number;
-  users: number;
-  coupons: number;
-  news: number;
-  revenue: number;
-  pending: number;
+  products: number; brands: number; orders: number; users: number;
+  coupons: number; news: number; revenue: number; pending: number;
 }
 
-function getStatusBadge(status: string) {
-  const map: Record<string, string> = {
-    pending: "badge-warning",
-    processing: "badge-info",
-    shipped: "badge-purple",
-    delivered: "badge-success",
-    cancelled: "badge-danger",
-  };
-  return map[status] || "badge-gray";
-}
-
-function getStatusLabel(status: string) {
-  const map: Record<string, string> = {
-    pending: "Chờ xử lý",
-    processing: "Đang xử lý",
-    shipped: "Đang giao",
-    delivered: "Đã giao",
-    cancelled: "Đã hủy",
-  };
-  return map[status] || status;
-}
+const statusConfig: Record<string, { color: string; label: string }> = {
+  pending: { color: 'gold', label: 'Chờ xử lý' },
+  processing: { color: 'blue', label: 'Đang xử lý' },
+  shipped: { color: 'purple', label: 'Đang giao' },
+  delivered: { color: 'green', label: 'Đã giao' },
+  cancelled: { color: 'red', label: 'Đã hủy' },
+};
 
 const parseCustomer = (raw: any) => {
   if (!raw) return null;
@@ -50,12 +37,9 @@ export default function AdminDashboard() {
     async function fetchAll() {
       try {
         const [products, brands, orders, usersResp, coupons, news] = await Promise.all([
-          get("/products"),
-          get("/brands"),
-          get("/orders"),
+          get("/products"), get("/brands"), get("/orders"),
           get("/users", { params: { page: 1, size: 1 } }),
-          get("/coupons"),
-          get("/news"),
+          get("/coupons"), get("/news"),
         ]);
 
         const revenue = (orders || [])
@@ -64,14 +48,10 @@ export default function AdminDashboard() {
         const pending = (orders || []).filter((o: any) => o.status === "pending").length;
 
         setStats({
-          products: products?.length || 0,
-          brands: brands?.length || 0,
-          orders: orders?.length || 0,
-          users: usersResp?.total || 0,
-          coupons: coupons?.length || 0,
-          news: news?.length || 0,
-          revenue,
-          pending,
+          products: products?.length || 0, brands: brands?.length || 0,
+          orders: orders?.length || 0, users: usersResp?.total || 0,
+          coupons: coupons?.length || 0, news: news?.length || 0,
+          revenue, pending,
         });
 
         const sorted = [...(orders || [])].sort((a: any, b: any) =>
@@ -88,118 +68,81 @@ export default function AdminDashboard() {
   const formatCurrency = (n: number) =>
     n.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
 
+  const columns = [
+    { title: '#ID', dataIndex: 'id', key: 'id', render: (id: number) => <Text code>#{id}</Text> },
+    {
+      title: 'Khách hàng', key: 'customer',
+      render: (_: any, r: any) => {
+        const c = parseCustomer(r.customerJson);
+        return c?.name || c?.fullName || r.email || '—';
+      },
+    },
+    {
+      title: 'Tổng tiền', dataIndex: 'totalAmount', key: 'totalAmount',
+      render: (v: number) => <Text strong>{formatCurrency(Number(v) || 0)}</Text>,
+    },
+    { title: 'Thanh toán', dataIndex: 'paymentMethod', key: 'paymentMethod', render: (v: string) => v || '—' },
+    {
+      title: 'Trạng thái', dataIndex: 'status', key: 'status',
+      render: (s: string) => {
+        const cfg = statusConfig[s];
+        return cfg ? <Tag color={cfg.color}>{cfg.label}</Tag> : <Tag>{s}</Tag>;
+      },
+    },
+    {
+      title: 'Thời gian', dataIndex: 'createdAt', key: 'createdAt',
+      render: (d: string) => d ? new Date(d).toLocaleDateString("vi-VN") : '—',
+    },
+  ];
+
   if (loading) {
     return (
-      <div className="loading-wrapper">
-        <div className="spinner" />
-        <div className="loading-text">Đang tải dữ liệu...</div>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 300 }}>
+        <Spin size="large" tip="Đang tải..." />
       </div>
     );
   }
 
+  const statCards = [
+    { icon: <ShoppingOutlined />, color: '#722ed1', value: stats?.products.toLocaleString(), label: 'Sản phẩm' },
+    { icon: <TagOutlined />, color: '#1890ff', value: stats?.brands, label: 'Thương hiệu' },
+    { icon: <ShoppingCartOutlined />, color: '#fa8c16', value: stats?.orders.toLocaleString(), label: 'Đơn hàng' },
+    { icon: <UserOutlined />, color: '#52c41a', value: stats?.users.toLocaleString(), label: 'Người dùng' },
+    { icon: <DollarOutlined />, color: '#eb2f96', value: formatCurrency(stats?.revenue || 0), label: 'Doanh thu' },
+    { icon: <ClockCircleOutlined />, color: '#f5222d', value: stats?.pending, label: 'Đơn chờ xử lý' },
+  ];
+
   return (
     <div>
-      <div className="page-header">
-        <div>
-          <h1 className="page-title">Dashboard</h1>
-          <p className="page-subtitle">Tổng quan hệ thống ZestFoot</p>
-        </div>
+      <div style={{ marginBottom: 24 }}>
+        <Title level={4} style={{ margin: 0 }}>Dashboard</Title>
+        <Text type="secondary">Tổng quan hệ thống ZestFoot</Text>
       </div>
 
-      <div className="stats-grid">
-        <div className="stat-card">
-          <div className="stat-icon purple">👟</div>
-          <div className="stat-info">
-            <div className="stat-value">{stats?.products.toLocaleString()}</div>
-            <div className="stat-label">Sản phẩm</div>
-          </div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-icon blue">🏷️</div>
-          <div className="stat-info">
-            <div className="stat-value">{stats?.brands}</div>
-            <div className="stat-label">Thương hiệu</div>
-          </div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-icon orange">📦</div>
-          <div className="stat-info">
-            <div className="stat-value">{stats?.orders.toLocaleString()}</div>
-            <div className="stat-label">Đơn hàng</div>
-          </div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-icon green">👤</div>
-          <div className="stat-info">
-            <div className="stat-value">{stats?.users.toLocaleString()}</div>
-            <div className="stat-label">Người dùng</div>
-          </div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-icon pink">💰</div>
-          <div className="stat-info">
-            <div className="stat-value" style={{ fontSize: "1.1rem" }}>
-              {formatCurrency(stats?.revenue || 0)}
-            </div>
-            <div className="stat-label">Doanh thu (đã giao)</div>
-          </div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-icon red">⏳</div>
-          <div className="stat-info">
-            <div className="stat-value">{stats?.pending}</div>
-            <div className="stat-label">Đơn chờ xử lý</div>
-          </div>
-        </div>
-      </div>
+      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+        {statCards.map((s, i) => (
+          <Col xs={12} sm={8} lg={6} key={i}>
+            <Card hoverable size="small">
+              <Statistic
+                title={s.label}
+                value={s.value}
+                prefix={<span style={{ color: s.color, fontSize: 20 }}>{s.icon}</span>}
+              />
+            </Card>
+          </Col>
+        ))}
+      </Row>
 
-      <div className="admin-table-wrapper">
-        <div className="table-toolbar">
-          <span style={{ fontWeight: 600, color: "#e2e8f0" }}>Đơn hàng gần đây</span>
-        </div>
-        {recentOrders.length === 0 ? (
-          <div className="empty-state">
-            <span className="empty-icon">📦</span>
-            <span className="empty-title">Chưa có đơn hàng nào</span>
-          </div>
-        ) : (
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>#ID</th>
-                <th>Khách hàng</th>
-                <th>Tổng tiền</th>
-                <th>Thanh toán</th>
-                <th>Trạng thái</th>
-                <th>Thời gian</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recentOrders.map((order) => {
-                const c = parseCustomer(order.customerJson);
-                return (
-                  <tr key={order.id}>
-                    <td>#{order.id}</td>
-                    <td>{c?.name || c?.fullName || order.email || "—"}</td>
-                    <td>{formatCurrency(Number(order.totalAmount) || 0)}</td>
-                    <td>{order.paymentMethod || "—"}</td>
-                    <td>
-                      <span className={`badge ${getStatusBadge(order.status)}`}>
-                        {getStatusLabel(order.status)}
-                      </span>
-                    </td>
-                    <td>
-                      {order.createdAt
-                        ? new Date(order.createdAt).toLocaleDateString("vi-VN")
-                        : "—"}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        )}
-      </div>
+      <Card title="Đơn hàng gần đây" size="small">
+        <Table
+          dataSource={recentOrders}
+          columns={columns}
+          rowKey="id"
+          pagination={false}
+          size="small"
+          locale={{ emptyText: 'Chưa có đơn hàng nào' }}
+        />
+      </Card>
     </div>
   );
 }

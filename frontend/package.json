@@ -10,10 +10,12 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@ant-design/icons": "^6.2.3",
     "@google/generative-ai": "^0.24.1",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.6.0",
     "@reduxjs/toolkit": "^2.11.2",
+    "antd": "^6.4.3",
     "aos": "^2.3.4",
     "axios": "^1.13.6",
     "lucide-react": "^0.577.0",
