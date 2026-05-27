@@ -44,10 +44,10 @@ const OrderDetail = () => {
                 }
 
                 const userEmail = user.email?.toLowerCase();
-                const orderEmail = data.email?.toLowerCase();
-                const customerEmail = data.customer?.email?.toLowerCase();
+                const customer = typeof data.customer === 'string' ? JSON.parse(data.customer) : (data.customer || {});
+                const customerEmail = customer.email?.toLowerCase();
 
-                if (userEmail !== orderEmail && userEmail !== customerEmail) {
+                if (userEmail !== customerEmail) {
                     setError('Bạn không có quyền xem đơn hàng này');
                     return;
                 }
@@ -108,7 +108,8 @@ const OrderDetail = () => {
 
     if (!order) return null;
 
-    const items = Array.isArray(order.items) ? order.items : [];
+    const orderCustomer = typeof order.customer === 'string' ? JSON.parse(order.customer) : (order.customer || {});
+    const items = typeof order.items === 'string' ? JSON.parse(order.items) : (Array.isArray(order.items) ? order.items : []);
 
     return (
         <div className="shopee-order-detail">
@@ -164,10 +165,10 @@ const OrderDetail = () => {
                             <h3>Địa Chỉ Nhận Hàng</h3>
                         </div>
                         <div className="addr-content">
-                            <div className="addr-name">{order.customer?.fullName || 'Người nhận'}</div>
-                            <div className="addr-phone">{'******' + (order.customer?.phone?.slice(-4) || '8888')}</div>
+                            <div className="addr-name">{orderCustomer.fullName || 'Người nhận'}</div>
+                            <div className="addr-phone">{'******' + (orderCustomer.phone?.slice(-4) || '8888')}</div>
                             <div className="addr-text">
-                                {order.customer?.address || 'Chưa có địa chỉ'}
+                                {orderCustomer.address || 'Chưa có địa chỉ'}
                             </div>
                         </div>
                     </div>

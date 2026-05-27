@@ -1,27 +1,29 @@
 package com.zestfoot.backend.entity;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
 @Table(name = "orders")
 @Data
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class Order {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 
-    private String email;
+    @Column(columnDefinition = "json")
+    private String customer;
 
-    @Column(name = "total_amount")
-    private Double totalAmount;
+    @Column(columnDefinition = "json")
+    private String items;
 
     @Column(name = "sub_total")
     private Double subTotal;
@@ -29,44 +31,32 @@ public class Order {
     @Column(name = "shipping_fee")
     private Double shippingFee;
 
-    @Column(name = "discount_amount")
-    private Double discountAmount;
+    private Double discount;
+
+    @Column(name = "total_amount")
+    private Double totalAmount;
 
     private String status;
-
-    @Column(name = "shipping_address", columnDefinition = "TEXT")
-    private String shippingAddress;
 
     @Column(name = "payment_method")
     private String paymentMethod;
 
-    @Column(name = "customer_json", columnDefinition = "TEXT")
-    private String customerJson;
+    @Column(name = "payment_info", columnDefinition = "json")
+    private String paymentInfo;
 
-    @Column(name = "payment_info_json", columnDefinition = "TEXT")
-    private String paymentInfoJson;
+    @Column(name = "voucher_discount")
+    private Double voucherDiscount;
 
-    @Column(name = "coupon_code")
-    private String couponCode;
+    @Column(name = "voucher_code")
+    private String voucherCode;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OrderItem> orderItems;
-
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    @Column(name = "point_discount")
+    private Double pointDiscount;
 
     @PrePersist
     protected void onCreate() {
-        LocalDateTime now = LocalDateTime.now();
-        this.createdAt = now;
-        this.updatedAt = now;
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
     }
 }

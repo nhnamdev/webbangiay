@@ -234,8 +234,6 @@ const Checkout = () => {
                 size: item.size,
             }));
             const orderData = {
-                user: user?.id ? { id: user.id } : null,
-                email: formData.email || user?.email,
                 customer: {
                     fullName: formData.fullName,
                     phone: formData.phone,
@@ -253,9 +251,10 @@ const Checkout = () => {
                 orderItems,
                 subTotal,
                 shippingFee,
-                discountAmount: discount + voucherDiscount + pointDiscount,
+                discount: discount,
+                voucherDiscount,
+                pointDiscount,
                 totalAmount: finalTotal,
-                shippingAddress: fullAddress,
                 paymentMethod,
                 couponCode: appliedCoupon?.code || selectedVoucher?.code || null,
                 status: 'pending',

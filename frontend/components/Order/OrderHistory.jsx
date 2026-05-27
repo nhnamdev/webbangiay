@@ -95,8 +95,9 @@ const OrderHistory = () => {
                 </div>
             ) : (
                 <div className="orders-list">
-                    {filteredOrders.map((order) => (
-                        <div key={order.id} className="order-card">
+                    {filteredOrders.map((order) => {
+                        const orderItems = typeof order.items === 'string' ? JSON.parse(order.items) : (Array.isArray(order.items) ? order.items : []);
+                        return (<div key={order.id} className="order-card">
                             <div className="order-header">
                                 <div className="order-id">
                                     <span className="label">Đơn hàng</span>
@@ -119,11 +120,11 @@ const OrderHistory = () => {
                                         <span className="price">{Number(order.total_amount).toLocaleString('vi-VN')}₫</span>
                                     </div>
                                     <div className="info-item">
-                                        <span>{order.items.length} sản phẩm</span>
+                                        <span>{orderItems.length} sản phẩm</span>
                                     </div>
                                 </div>
                                 <div className="order-items-preview-visual">
-                                    {order.items.slice(0, 4).map((item, idx) => (
+                                    {orderItems.slice(0, 4).map((item, idx) => (
                                         <div key={idx} className="item-preview-visual" title={`${item.product_name} x${item.quantity}`}>
                                             <div className="preview-image-container">
                                                 {item.image ? (
@@ -135,9 +136,9 @@ const OrderHistory = () => {
                                             </div>
                                         </div>
                                     ))}
-                                    {order.items.length > 4 && (
+                                    {orderItems.length > 4 && (
                                         <div className="more-items-badge">
-                                            +{order.items.length - 4}
+                                            +{orderItems.length - 4}
                                         </div>
                                     )}
                                 </div>
@@ -148,8 +149,8 @@ const OrderHistory = () => {
                                     Xem chi tiết <ChevronRight size={16} />
                                 </button>
                             </div>
-                        </div>
-                    ))}
+                        </div>);
+                    })}
                 </div>
             )}
         </div>

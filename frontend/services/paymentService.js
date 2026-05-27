@@ -29,22 +29,27 @@ export const processPayment = async (orderData, method) => {
         ? `VNP${generateRandomString(8)}`
         : (method === 'momo' ? `MOMO${generateRandomString(10)}` : null);
 
-    // Tách riêng customer object ra khỏi orderData để không gửi field lạ vào backend
-    const { customer, ...cleanOrderData } = orderData || {};
+    const { customer, orderItems, discountAmount, couponCode, ...rest } = orderData || {};
 
     const newOrder = {
-        ...cleanOrderData,
-        status,
-        paymentMethod: method,
-        email: customer?.email || orderData?.email,
-        customerJson: customer ? JSON.stringify(customer) : null,
-        paymentInfoJson: JSON.stringify({
+        ...rest,
+        items: orderItems ? JSON.stringify(orderItems) : '[]',
+        customer: customer ? JSON.stringify(customer) : null,
+        paymentInfo: JSON.stringify({
             method,
             status: paymentStatus,
             transaction_id: transactionId,
             paid_at: method !== 'cod' ? new Date().toISOString() : null,
         }),
+        status,
+        paymentMethod: method,
+        discount: discountAmount ?? 0,
+        voucherCode: couponCode ?? null,
     };
+
+    delete newOrder.user;
+    delete newOrder.email;
+    delete newOrder.shippingAddress;
 
     try {
         return await post('/orders', newOrder);
