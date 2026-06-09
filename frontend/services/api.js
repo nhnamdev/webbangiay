@@ -1,4 +1,5 @@
 import { get, post } from './http';
+import { clearStoredUser, getStoredUser, setStoredUser } from './authStorage';
 
 const tryParseJSON = (raw) => {
     if (raw == null) return raw;
@@ -221,7 +222,7 @@ const persistAuth = (data) => {
         localStorage.setItem('token', data.session.access_token);
     }
     if (data?.user) {
-        localStorage.setItem('currentUser', JSON.stringify(data.user));
+        setStoredUser(data.user);
     }
 };
 
@@ -252,15 +253,13 @@ export const logoutUser = async () => {
         // ignore
     }
     localStorage.removeItem('token');
-    localStorage.removeItem('currentUser');
+    clearStoredUser();
 };
 
 export const isAuthenticated = async () => Boolean(localStorage.getItem('token'));
 
 export const getCurrentUser = () => {
-    const raw = localStorage.getItem('currentUser');
-    if (!raw) return null;
-    try { return JSON.parse(raw); } catch { return null; }
+    return getStoredUser();
 };
 
 // ===== Search (cache + local scoring) =====
