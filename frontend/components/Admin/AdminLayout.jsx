@@ -8,6 +8,7 @@ import {
   MenuFoldOutlined, MenuUnfoldOutlined, LogoutOutlined, HomeOutlined,
 } from '@ant-design/icons';
 import { logoutUser } from "../../services/api";
+import { clearAdminSessionCookie } from '../../services/authStorage';
 
 const { Header, Sider, Content } = Layout;
 const { Text } = Typography;
@@ -32,7 +33,7 @@ export default function AdminLayout({ children }) {
 
   const handleLogout = async () => {
     await logoutUser();
-    document.cookie = "admin-session=; path=/; max-age=0";
+    clearAdminSessionCookie();
     navigate("/login");
   };
 
