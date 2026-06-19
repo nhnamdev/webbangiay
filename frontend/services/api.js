@@ -1,6 +1,15 @@
 import { get, post } from './http';
 import { clearStoredUser, getStoredUser, setStoredUser } from './authStorage';
 
+const withFallback = async (request, fallback, errorMessage) => {
+    try {
+        return await request();
+    } catch (error) {
+        console.error(errorMessage, error.message);
+        return fallback;
+    }
+};
+
 const tryParseJSON = (raw) => {
     if (raw == null) return raw;
     if (typeof raw !== 'string') return raw;
@@ -19,71 +28,29 @@ const normalizeProduct = (p) => {
 };
 
 const normalizeProducts = (list) => (Array.isArray(list) ? list.map(normalizeProduct) : []);
+const getProductText = (product) => ({
+    name: (product.name || '').toLowerCase(),
+    subCategory: (product.subCategory || '').toLowerCase(),
+    brand: (product.brand || '').toLowerCase(),
+});
+
+const includesAny = (value, terms) => terms.some((term) => value.includes(term));
 
 // ===== Brands =====
-export const getBrands = async () => {
-    try {
-        return await get('/brands');
-    } catch (error) {
-        console.error('Error fetching brands:', error.message);
-        return [];
-    }
-};
+export const getBrands = async () => withFallback(() => get('/brands'), [], 'Error fetching brands:');
 
 // ===== Products =====
-export const getAllProducts = async () => {
-    try {
-        return normalizeProducts(await get('/products'));
-    } catch (error) {
-        console.error('Error fetching all products:', error.message);
-        return [];
-    }
-};
+export const getAllProducts = async () => withFallback(() => get('/products').then(normalizeProducts), [], 'Error fetching all products:');
 
-export const getProductById = async (id) => {
-    try {
-        return normalizeProduct(await get(`/products/${id}`));
-    } catch (error) {
-        console.error('Error fetching product by ID:', error.message);
-        return null;
-    }
-};
+export const getProductById = async (id) => withFallback(() => get(`/products/${id}`).then(normalizeProduct), null, 'Error fetching product by ID:');
 
-export const getNewArrivals = async () => {
-    try {
-        return normalizeProducts(await get('/products', { params: { isNew: true } }));
-    } catch (error) {
-        console.error('Error fetching new arrivals:', error.message);
-        return [];
-    }
-};
+export const getNewArrivals = async () => withFallback(() => get('/products', { params: { isNew: true } }).then(normalizeProducts), [], 'Error fetching new arrivals:');
 
-export const getSaleProducts = async () => {
-    try {
-        return normalizeProducts(await get('/products', { params: { isSale: true } }));
-    } catch (error) {
-        console.error('Error fetching sale products:', error.message);
-        return [];
-    }
-};
+export const getSaleProducts = async () => withFallback(() => get('/products', { params: { isSale: true } }).then(normalizeProducts), [], 'Error fetching sale products:');
 
-export const getTrendingProducts = async () => {
-    try {
-        return normalizeProducts(await get('/products', { params: { isTrending: true } }));
-    } catch (error) {
-        console.error('Error fetching trending products:', error.message);
-        return [];
-    }
-};
+export const getTrendingProducts = async () => withFallback(() => get('/products', { params: { isTrending: true } }).then(normalizeProducts), [], 'Error fetching trending products:');
 
-export const getAsicsProducts = async () => {
-    try {
-        return normalizeProducts(await get('/products', { params: { brand: 'ASICS' } }));
-    } catch (error) {
-        console.error('Error fetching ASICS products:', error.message);
-        return [];
-    }
-};
+export const getAsicsProducts = async () => withFallback(() => get('/products', { params: { brand: 'ASICS' } }).then(normalizeProducts), [], 'Error fetching ASICS products:');
 
 // ===== Collections (filter local trên list product) =====
 export const getProductsByCollection = async (slug) => {
@@ -102,79 +69,82 @@ export const getProductsByCollection = async (slug) => {
 
         const matchGender = (lowerSlug.includes('nu') ? 'women' : (lowerSlug.includes('nam') ? 'men' : null));
 
+        const isMatchingGender = (product) => !matchGender || product.gender === matchGender;
+        const isMatchingText = (product, terms) => {
+            const { name, subCategory } = getProductText(product);
+            return includesAny(name, terms) || includesAny(subCategory, terms);
+        };
+
         if (lowerSlug.includes('giay-the-thao')) {
-            return all.filter(p => {
-                if (matchGender && p.gender !== matchGender) return false;
-                if (p.category !== 'shoes') return false;
-                const nameHigh = (p.name || '').toLowerCase();
-                const sub = p.subCategory ? p.subCategory.toLowerCase() : '';
-                const isExplicitSneaker = sub === 'sneaker' || nameHigh.includes('sneaker') || nameHigh.includes('thể thao') || nameHigh.includes('running') || nameHigh.includes('walking');
-                const isOtherType = nameHigh.includes('sandal') || nameHigh.includes('xăng đan') || nameHigh.includes('dép') || nameHigh.includes('slide') || nameHigh.includes('da ') || nameHigh.includes('tây') || nameHigh.includes('boot') || nameHigh.includes('loafer');
-                return isExplicitSneaker || (!sub && !isOtherType);
+            return all.filter((product) => {
+                if (!isMatchingGender(product) || product.category !== 'shoes') return false;
+                const { name, subCategory } = getProductText(product);
+                const isExplicitSneaker = subCategory === 'sneaker' || includesAny(name, ['sneaker', 'thể thao', 'running', 'walking']);
+                const isOtherType = includesAny(name, ['sandal', 'xăng đan', 'dép', 'slide', 'da ', 'tây', 'boot', 'loafer']);
+                return isExplicitSneaker || (!subCategory && !isOtherType);
             });
         }
         if (lowerSlug.includes('giay-xang-dan')) {
-            return all.filter(p => {
-                if (matchGender && p.gender !== matchGender) return false;
-                if (p.category !== 'shoes') return false;
-                const nameHigh = (p.name || '').toLowerCase();
-                const sub = p.subCategory ? p.subCategory.toLowerCase() : '';
-                return sub === 'sandal' || nameHigh.includes('sandal') || nameHigh.includes('xăng đan');
-            });
+            return all.filter((product) => isMatchingGender(product) && product.category === 'shoes' && isMatchingText(product, ['sandal', 'xăng đan']));
         }
         if (lowerSlug.includes('dep')) {
-            return all.filter(p => {
-                if (matchGender && p.gender !== matchGender) return false;
-                if (p.category !== 'shoes') return false;
-                const nameHigh = (p.name || '').toLowerCase();
-                const sub = p.subCategory ? p.subCategory.toLowerCase() : '';
-                return sub === 'slipper' || sub === 'slide' || nameHigh.includes('dép') || nameHigh.includes('slide');
-            });
+            return all.filter((product) => isMatchingGender(product) && product.category === 'shoes' && isMatchingText(product, ['dép', 'slide']) || getProductText(product).subCategory === 'slipper' || getProductText(product).subCategory === 'slide');
         }
         if (lowerSlug.includes('giay-da')) {
-            return all.filter(p => {
-                if (matchGender && p.gender !== matchGender) return false;
-                if (p.category !== 'shoes') return false;
-                const nameHigh = (p.name || '').toLowerCase();
-                const sub = p.subCategory ? p.subCategory.toLowerCase() : '';
-                return sub === 'formal' || nameHigh.includes('giày da') || nameHigh.includes('business') || nameHigh.includes('loafer') || nameHigh.includes('boot') || nameHigh.includes('tây');
+            return all.filter((product) => {
+                if (!isMatchingGender(product) || product.category !== 'shoes') return false;
+                const { name, subCategory } = getProductText(product);
+                return subCategory === 'formal' || includesAny(name, ['giày da', 'business', 'loafer', 'boot', 'tây']);
             });
         }
         if (lowerSlug === 'ao') {
-            return all.filter(p => {
-                if (p.category !== 'apparel') return false;
-                const nameHigh = (p.name || '').toLowerCase();
-                const sub = p.subCategory ? p.subCategory.toLowerCase() : '';
-                return sub === 'shirt' || sub === 'top' || nameHigh.includes('áo') || nameHigh.includes('hoodie') || nameHigh.includes('jacket') || nameHigh.includes('tee');
+            return all.filter((product) => {
+                if (product.category !== 'apparel') return false;
+                const { name, subCategory } = getProductText(product);
+                return includesAny(subCategory, ['shirt', 'top']) || includesAny(name, ['áo', 'hoodie', 'jacket', 'tee']);
             });
         }
         if (lowerSlug === 'quan') {
-            return all.filter(p => {
-                if (p.category !== 'apparel') return false;
-                const nameHigh = (p.name || '').toLowerCase();
-                const sub = p.subCategory ? p.subCategory.toLowerCase() : '';
-                return sub === 'pant' || sub === 'bottom' || nameHigh.includes('quần') || nameHigh.includes('short') || nameHigh.includes('legging');
+            return all.filter((product) => {
+                if (product.category !== 'apparel') return false;
+                const { name, subCategory } = getProductText(product);
+                return includesAny(subCategory, ['pant', 'bottom']) || includesAny(name, ['quần', 'short', 'legging']);
             });
         }
         if (lowerSlug === 'day-giay') {
-            return all.filter(p => (p.name || '').toLowerCase().includes('dây') || (p.subCategory && p.subCategory.toLowerCase() === 'shoelace'));
+            return all.filter((product) => {
+                const { name, subCategory } = getProductText(product);
+                return name.includes('dây') || subCategory === 'shoelace';
+            });
         }
 
         switch (lowerSlug) {
             case 'tui':
-                return all.filter(p => p.subCategory === 'bag' || (p.name || '').toLowerCase().includes('balo') || (p.name || '').toLowerCase().includes('túi'));
+                return all.filter((product) => {
+                    const { name, subCategory } = getProductText(product);
+                    return subCategory === 'bag' || includesAny(name, ['balo', 'túi']);
+                });
             case 'non':
-                return all.filter(p => p.subCategory === 'hat' || (p.name || '').toLowerCase().includes('nón'));
+                return all.filter((product) => {
+                    const { name, subCategory } = getProductText(product);
+                    return subCategory === 'hat' || name.includes('nón');
+                });
             case 'vo':
-                return all.filter(p => p.subCategory === 'socks' || (p.name || '').toLowerCase().includes('vớ'));
+                return all.filter((product) => {
+                    const { name, subCategory } = getProductText(product);
+                    return subCategory === 'socks' || name.includes('vớ');
+                });
             case 'chay-bo':
-                return all.filter(p => p.category === 'shoes' && ((p.name || '').toLowerCase().includes('running') || (p.name || '').toLowerCase().includes('chạy')));
+                return all.filter((product) => {
+                    const { name } = getProductText(product);
+                    return product.category === 'shoes' && includesAny(name, ['running', 'chạy']);
+                });
             case 'cham-soc-giay':
-                return all.filter(p => p.category === 'care');
+                return all.filter((product) => product.category === 'care');
             case 'sale':
-                return all.filter(p => p.isSale || (p.salePrice && p.salePrice < p.price));
+                return all.filter((product) => product.isSale || (product.salePrice && product.salePrice < product.price));
             case 'doc-quyen':
-                return all.filter(p => p.isAsicsExclusive || (p.badges && JSON.stringify(p.badges).includes('EXCLUSIVE')));
+                return all.filter((product) => product.isAsicsExclusive || (product.badges && JSON.stringify(product.badges).includes('EXCLUSIVE')));
             default:
                 break;
         }
@@ -191,21 +161,11 @@ export const getProductsByCollection = async (slug) => {
 
 // ===== News =====
 export const getNews = async () => {
-    try {
-        return await get('/news');
-    } catch (error) {
-        console.error('Error fetching news:', error.message);
-        return [];
-    }
+    return withFallback(() => get('/news'), [], 'Error fetching news:');
 };
 
 export const getNewsById = async (id) => {
-    try {
-        return await get(`/news/${id}`);
-    } catch (error) {
-        console.error('Error fetching news by ID:', error.message);
-        return null;
-    }
+    return withFallback(() => get(`/news/${id}`), null, 'Error fetching news by ID:');
 };
 
 // ===== FAQ (static) =====
