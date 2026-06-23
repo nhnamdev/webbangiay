@@ -47,6 +47,26 @@ const ProductDetail = () => {
         alert("Đã thêm vào giỏ hàng!");
     };
 
+    const handleBuyNow = () => {
+        if (!user) {
+            alert('Vui lòng đăng nhập để mua hàng!');
+            return;
+        }
+        if (!selectedSize) {
+            alert('Vui lòng chọn size!');
+            return;
+        }
+
+        const buyNowItem = { product, size: selectedSize, quantity: 1 };
+        dispatch(addToCart(buyNowItem));
+        navigate('/checkout', {
+            state: {
+                fromCart: true,
+                selectedItems: [buyNowItem],
+            },
+        });
+    };
+
     if (loading) return <div className="loading-screen"><div className="spinner"></div></div>;
     if (!product) return <div style={{ padding: '50px', textAlign: 'center' }}><h2>Sản phẩm không tồn tại</h2></div>;
 
@@ -125,13 +145,7 @@ const ProductDetail = () => {
                             </button>
                             <button
                                 className="action-btn buy-now-btn"
-                                onClick={() => {
-                                    if (!selectedSize) {
-                                        alert('Vui lòng chọn size!');
-                                        return;
-                                    }
-                                    navigate('/checkout', { state: { product, size: selectedSize } });
-                                }}
+                                onClick={handleBuyNow}
                             >
                                 MUA NGAY
                             </button>
