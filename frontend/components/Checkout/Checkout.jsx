@@ -24,27 +24,15 @@ const Checkout = () => {
 
     const navState = location.state;
 
-    // Lấy thông tin sản phẩm từ URL search params (khi mua ngay) hoặc từ navigation state (từ Cart)
-    const productJson = searchParams.get('product');
-    const product = productJson ? JSON.parse(decodeURIComponent(productJson)) : null;
-    const size = searchParams.get('size');
-    const quantity = Number(searchParams.get('quantity')) || 1;
     const fromCart = navState?.fromCart ?? (searchParams.get('fromCart') === 'true');
     const selectedItemsJson = searchParams.get('selectedItems');
     const selectedItemsFromCart = navState?.selectedItems || (selectedItemsJson ? JSON.parse(decodeURIComponent(selectedItemsJson)) : null);
 
-    // --- LOGIC QUAN TRỌNG: Xác định danh sách sản phẩm cần thanh toán ---
-    // 1. Nếu từ Cart và có danh sách chọn -> Dùng danh sách chọn
-    // 2. Nếu từ Cart nhưng không có danh sách chọn (fallback) -> Dùng toàn bộ cartItems
-    // 3. Nếu mua ngay (Buy Now) -> Tạo mảng chứa 1 sản phẩm
-    const checkoutItems = fromCart
-        ? (selectedItemsFromCart || cartItems)
-        : [{ product, size, quantity }];
+    // Xác định danh sách sản phẩm cần thanh toán từ giỏ hàng hoặc item đã chọn
+    const checkoutItems = fromCart ? (selectedItemsFromCart || cartItems) : cartItems;
 
-    // --- KIỂM TRA ĐẦU VÀO ---
     const hasValidItems = checkoutItems.length > 0 && checkoutItems.every(item => item?.product);
 
-    // --- TÍNH LẠI TỔNG TIỀN (SUBTOTAL) ---
     const subTotal = hasValidItems
         ? checkoutItems.reduce((total, item) => {
             const price = item.product.isSale ? item.product.salePrice : item.product.price;
@@ -176,7 +164,7 @@ const Checkout = () => {
         }
     }, [user]);
 
-    if ((!product && !fromCart) || checkoutItems.length === 0) {
+    if (checkoutItems.length === 0) {
         return (
             <div className="checkout-container" style={{ textAlign: 'center', padding: '60px 20px' }}>
                 <h2>Không có sản phẩm để thanh toán</h2>
