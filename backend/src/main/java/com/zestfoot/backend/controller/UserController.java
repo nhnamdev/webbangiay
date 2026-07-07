@@ -2,11 +2,14 @@ package com.zestfoot.backend.controller;
 
 import com.zestfoot.backend.dto.UserResponse;
 import com.zestfoot.backend.entity.User;
+import com.zestfoot.backend.entity.UserVoucher;
 import com.zestfoot.backend.repository.UserRepository;
+import com.zestfoot.backend.repository.UserVoucherRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +25,9 @@ public class UserController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private UserVoucherRepository voucherRepository;
 
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
@@ -55,8 +61,13 @@ public class UserController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/{userId}/vouchers")
+    public ResponseEntity<List<UserVoucher>> getUserVouchers(@PathVariable Long userId) {
+        return ResponseEntity.ok(voucherRepository.findByUserId(userId));
+    }
+
     @PostMapping
-    public UserResponse createUser(@RequestBody Map<String, Object> body) {
+    public ResponseEntity<UserResponse> createUser(@RequestBody Map<String, Object> body) {
         User u = new User();
         u.setEmail((String) body.get("email"));
         u.setFullName((String) body.getOrDefault("fullName", body.get("full_name")));
@@ -67,10 +78,10 @@ public class UserController {
         u.setRole((String) body.getOrDefault("role", "USER"));
         Object pw = body.get("password");
         if (pw != null) u.setPasswordHash(passwordEncoder.encode(pw.toString()));
-        return UserResponse.from(userRepository.save(u));
+        return ResponseEntity.status(HttpStatus.CREATED).body(UserResponse.from(userRepository.save(u)));
     }
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     public ResponseEntity<UserResponse> update(@PathVariable Long id, @RequestBody Map<String, Object> body) {
         return userRepository.findById(id).map(u -> {
             if (body.containsKey("fullName")) u.setFullName((String) body.get("fullName"));

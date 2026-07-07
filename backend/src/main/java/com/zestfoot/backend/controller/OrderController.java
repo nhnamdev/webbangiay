@@ -3,6 +3,7 @@ package com.zestfoot.backend.controller;
 import com.zestfoot.backend.entity.Order;
 import com.zestfoot.backend.repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,7 +35,7 @@ public class OrderController {
     }
 
     @PostMapping
-    public Order createOrder(@RequestBody Order order) {
+    public ResponseEntity<Order> createOrder(@RequestBody Order order) {
         if (order.getStatus() == null) order.setStatus("pending");
         if (order.getTotalAmount() == null) {
             double total = (order.getSubTotal() != null ? order.getSubTotal() : 0)
@@ -44,10 +45,10 @@ public class OrderController {
                 - (order.getPointDiscount() != null ? order.getPointDiscount() : 0);
             order.setTotalAmount(Math.max(total, 0));
         }
-        return orderRepository.save(order);
+        return ResponseEntity.status(HttpStatus.CREATED).body(orderRepository.save(order));
     }
 
-    @PutMapping("/{id}/status")
+    @PatchMapping("/{id}/status")
     public ResponseEntity<Order> updateStatus(@PathVariable Long id, @RequestBody Map<String, Object> body) {
         return orderRepository.findById(id).map(o -> {
             String status = (String) body.getOrDefault("status", o.getStatus());

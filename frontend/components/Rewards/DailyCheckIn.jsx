@@ -20,7 +20,7 @@ const DailyCheckIn = ({ onPointUpdate }) => {
 
         const fetchCheckInStatus = async () => {
             try {
-                const all = await get(`/points/user/${user.id}/transactions`);
+                const all = await get(`/users/${user.id}/point-transactions`);
                 const transactions = (all || []).filter(t => t.reason === 'Điểm danh hàng ngày');
 
                 const today = new Date().toDateString();
@@ -124,7 +124,7 @@ const DailyCheckIn = ({ onPointUpdate }) => {
         const pointsToAdd = REWARD_MAP[nextDay - 1];
 
         try {
-            await post(`/points/user/${user.id}`, {
+            await post(`/users/${user.id}/point-transactions`, {
                 type: 'earn',
                 amount: pointsToAdd,
                 reason: 'Điểm danh hàng ngày',

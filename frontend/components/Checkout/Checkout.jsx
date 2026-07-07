@@ -162,7 +162,7 @@ const Checkout = () => {
             // Fetch user vouchers
             const fetchVouchers = async () => {
                 try {
-                    const all = await get(`/vouchers/user/${user.id}`);
+                    const all = await get(`/users/${user.id}/vouchers`);
                     const nowIso = new Date().toISOString();
                     const active = (all || [])
                         .filter(v => v.status === 'active' && (!v.expiresAt || v.expiresAt >= nowIso))
@@ -280,7 +280,7 @@ const Checkout = () => {
                 if (usePoints && pointDiscount > 0 && user?.id) {
                     const pointsUsed = Math.ceil(pointDiscount / 1000);
                     try {
-                        await post(`/points/user/${user.id}`, {
+                        await post(`/users/${user.id}/point-transactions`, {
                             type: 'spend',
                             amount: pointsUsed,
                             reason: 'Dùng Xu thanh toán đơn hàng',
@@ -314,7 +314,7 @@ const Checkout = () => {
                     try {
                         const pointsEarned = Math.floor(finalTotal / 10000);
                         if (pointsEarned > 0) {
-                            await post(`/points/user/${user.id}`, {
+                            await post(`/users/${user.id}/point-transactions`, {
                                 type: 'earn',
                                 amount: pointsEarned,
                                 reason: `Tích điểm đơn hàng #${Date.now().toString().slice(-6)}`,

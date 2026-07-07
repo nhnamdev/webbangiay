@@ -4,6 +4,7 @@ import com.zestfoot.backend.entity.Product;
 import com.zestfoot.backend.repository.ProductRepository;
 import com.zestfoot.backend.service.R2StorageService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -50,20 +51,20 @@ public class ProductController {
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    public Product create(@RequestBody Product product) {
-        return productRepository.save(product);
+    public ResponseEntity<Product> create(@RequestBody Product product) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(productRepository.save(product));
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public Product createMultipart(
+    public ResponseEntity<Product> createMultipart(
             @ModelAttribute Product product,
             @RequestPart(value = "imageFile", required = false) MultipartFile imageFile
     ) {
         applyUploadedImage(product, imageFile);
-        return productRepository.save(product);
+        return ResponseEntity.status(HttpStatus.CREATED).body(productRepository.save(product));
     }
 
-    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PatchMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Product> update(@PathVariable Long id, @RequestBody Product product) {
         return productRepository.findById(id).map(existing -> {
             mergeEditableFields(existing, product);
@@ -71,7 +72,7 @@ public class ProductController {
         }).orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PatchMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Product> updateMultipart(
             @PathVariable Long id,
             @ModelAttribute Product product,

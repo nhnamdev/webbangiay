@@ -3,6 +3,7 @@ package com.zestfoot.backend.controller;
 import com.zestfoot.backend.entity.Brand;
 import com.zestfoot.backend.repository.BrandRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,8 +27,8 @@ public class BrandController {
     }
 
     @PostMapping
-    public Brand create(@RequestBody Brand brand) {
-        return brandRepository.save(brand);
+    public ResponseEntity<Brand> create(@RequestBody Brand brand) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(brandRepository.save(brand));
     }
 
     @PutMapping("/{id}")

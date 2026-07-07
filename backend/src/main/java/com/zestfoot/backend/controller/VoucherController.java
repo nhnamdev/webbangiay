@@ -3,6 +3,7 @@ package com.zestfoot.backend.controller;
 import com.zestfoot.backend.entity.UserVoucher;
 import com.zestfoot.backend.repository.UserVoucherRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,14 +21,9 @@ public class VoucherController {
         return voucherRepository.findAll();
     }
 
-    @GetMapping("/user/{userId}")
-    public List<UserVoucher> byUser(@PathVariable Long userId) {
-        return voucherRepository.findByUserId(userId);
-    }
-
     @PostMapping
-    public UserVoucher create(@RequestBody UserVoucher voucher) {
-        return voucherRepository.save(voucher);
+    public ResponseEntity<UserVoucher> create(@RequestBody UserVoucher voucher) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(voucherRepository.save(voucher));
     }
 
     @PutMapping("/{id}")

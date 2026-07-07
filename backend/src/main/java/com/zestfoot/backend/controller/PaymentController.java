@@ -76,8 +76,34 @@ public class PaymentController {
         Map<String, Object> response = new HashMap<>();
         try {
             PaymentLink paymentLink = payOSService.getPaymentInfo(orderCode);
+            String payosStatus = paymentLink.getStatus().name();
+
+            // CHỦ ĐỘNG CẬP NHẬT DATABASE KHI TRẠNG THÁI TRÊN PAYOS THAY ĐỔI
+            Order order = orderRepository.findById(orderCode).orElse(null);
+            if (order != null && "pending".equals(order.getStatus())) {
+                if ("PAID".equals(payosStatus)) {
+                    order.setStatus("processing");
+
+                    // Cập nhật paymentInfo sang trạng thái đã thanh toán
+                    Map<String, Object> paymentInfo = new HashMap<>();
+                    try {
+                        paymentInfo = objectMapper.readValue(order.getPaymentInfo(), HashMap.class);
+                    } catch (Exception ignored) {}
+                    paymentInfo.put("status", "00"); // 00 tương ứng với PAID
+                    paymentInfo.put("paid_at", LocalDateTime.now().toString());
+                    try {
+                        order.setPaymentInfo(objectMapper.writeValueAsString(paymentInfo));
+                    } catch (Exception ignored) {}
+
+                    orderRepository.save(order);
+                } else if ("CANCELLED".equals(payosStatus) || "EXPIRED".equals(payosStatus)) {
+                    order.setStatus("cancelled");
+                    orderRepository.save(order);
+                }
+            }
+
             response.put("success", true);
-            response.put("status", paymentLink.getStatus().name());
+            response.put("status", payosStatus);
             response.put("amount", paymentLink.getAmount());
             response.put("amountPaid", paymentLink.getAmountPaid());
             response.put("amountRemaining", paymentLink.getAmountRemaining());
