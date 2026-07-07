@@ -14,12 +14,34 @@ interface News {
 
 const INITIAL: any = { title: null, excerpt: null, image: null, publishedAt: null, content: null, author: null, slug: null };
 
+const toDatetimeLocalValue = (value: string | null | undefined) => {
+  if (!value) return undefined;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  const offset = date.getTimezoneOffset() * 60000;
+  return new Date(date.getTime() - offset).toISOString().slice(0, 16);
+};
+
+const buildFormData = (values: any, imageFile: File | null) => {
+  const formData = new FormData();
+  Object.entries(values || {}).forEach(([key, value]) => {
+    if (value === null || value === undefined || value === '') return;
+    formData.append(key, String(value));
+  });
+  if (imageFile) {
+    formData.append('imageFile', imageFile);
+  }
+  return formData;
+};
+
 export default function NewsAdmin() {
   const [news, setNews] = useState<News[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>('');
   const [form] = Form.useForm();
 
   const fetchData = useCallback(async () => {
@@ -35,22 +57,49 @@ export default function NewsAdmin() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  const openCreate = () => { setEditId(null); form.resetFields(); setModalOpen(true); };
-  const openEdit = (n: News) => { setEditId(n.id); form.setFieldsValue(n); setModalOpen(true); };
+  const openCreate = () => {
+    setEditId(null);
+    setImageFile(null);
+    setImagePreview('');
+    form.resetFields();
+    setModalOpen(true);
+  };
+
+  const openEdit = (n: News) => {
+    setEditId(n.id);
+    setImageFile(null);
+    setImagePreview(n.image || '');
+    form.setFieldsValue({
+      ...n,
+      publishedAt: toDatetimeLocalValue(n.publishedAt),
+    });
+    setModalOpen(true);
+  };
+
+  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] || null;
+    setImageFile(file);
+    if (file) {
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
 
   const handleSave = async () => {
     const values = await form.validateFields();
     if (!values.title) return;
     setSaving(true);
     try {
+      const payload = buildFormData(values, imageFile);
       if (editId) {
-        await putReq(`/news/${editId}`, values);
+        await putReq(`/news/${editId}`, payload);
         message.success("Đã lưu bài viết!");
       } else {
-        await post("/news", values);
+        await post("/news", payload);
         message.success("Đã thêm bài viết!");
       }
       setModalOpen(false);
+      setImageFile(null);
+      setImagePreview('');
       fetchData();
     } catch (e: any) {
       if (e?.message) message.error(e.message);
@@ -130,8 +179,17 @@ export default function NewsAdmin() {
           <Form.Item name="excerpt" label="Tóm tắt">
             <TextArea rows={3} placeholder="Tóm tắt nội dung..." />
           </Form.Item>
-          <Form.Item name="image" label="URL ảnh">
-            <Input placeholder="https://..." />
+          <Form.Item label="Ảnh bài viết">
+            <Input type="file" accept="image/*" onChange={handleImageSelect} />
+            {imagePreview ? (
+              <div style={{ marginTop: 12 }}>
+                <img
+                  src={imagePreview}
+                  alt="Xem trước ảnh bài viết"
+                  style={{ width: '100%', maxHeight: 240, objectFit: 'cover', borderRadius: 12, border: '1px solid #eee' }}
+                />
+              </div>
+            ) : null}
           </Form.Item>
           <Space style={{ width: '100%' }} size={16}>
             <Form.Item name="author" label="Tác giả" style={{ flex: 1 }}>
