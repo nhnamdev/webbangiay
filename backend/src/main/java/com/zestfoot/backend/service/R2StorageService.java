@@ -41,6 +41,14 @@ public class R2StorageService {
     }
 
     public String uploadProductImage(MultipartFile file) {
+        return uploadImage(file, "products");
+    }
+
+    public String uploadNewsImage(MultipartFile file) {
+        return uploadImage(file, "news");
+    }
+
+    private String uploadImage(MultipartFile file, String folder) {
         if (file == null || file.isEmpty()) {
             return null;
         }
@@ -57,7 +65,7 @@ public class R2StorageService {
         String contentType = file.getContentType();
         String originalName = file.getOriginalFilename() == null ? "image" : file.getOriginalFilename();
         String fileName = sanitizeFileName(originalName);
-        String key = "products/" + LocalDate.now() + "/" + UUID.randomUUID() + "-" + fileName;
+        String key = folder + "/" + LocalDate.now() + "/" + UUID.randomUUID() + "-" + fileName;
 
         try (var r2Client = software.amazon.awssdk.services.s3.S3Client.builder()
                 .region(Region.of("auto"))
