@@ -2,7 +2,7 @@ import { post } from './http';
 
 export const validateCoupon = async (code, orderTotal, userId = null) => {
     try {
-        const data = await post('/coupons/validate', { code, orderTotal, userId });
+        const data = await post('/coupons/validations', { code, orderTotal, userId });
         return data;
     } catch (error) {
         console.error('Coupon Validation Error:', error.message);
@@ -13,7 +13,7 @@ export const validateCoupon = async (code, orderTotal, userId = null) => {
 export const markCouponAsUsed = async (couponCode) => {
     if (!couponCode) return;
     try {
-        await post('/coupons/mark-used', { code: couponCode });
+        await post(`/coupons/${couponCode}/usages`);
     } catch (err) {
         console.error('Error marking coupon used:', err.message);
     }

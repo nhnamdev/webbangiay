@@ -5,6 +5,7 @@ import com.zestfoot.backend.entity.UserVoucher;
 import com.zestfoot.backend.repository.CouponRepository;
 import com.zestfoot.backend.repository.UserVoucherRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,9 +36,9 @@ public class CouponController {
     }
 
     @PostMapping
-    public Coupon create(@RequestBody Coupon coupon) {
+    public ResponseEntity<Coupon> create(@RequestBody Coupon coupon) {
         if (coupon.getCode() != null) coupon.setCode(coupon.getCode().toUpperCase().trim());
-        return couponRepository.save(coupon);
+        return ResponseEntity.status(HttpStatus.CREATED).body(couponRepository.save(coupon));
     }
 
     @PutMapping("/{id}")
@@ -56,7 +57,7 @@ public class CouponController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/validate")
+    @PostMapping("/validations")
     public Map<String, Object> validate(@RequestBody Map<String, Object> req) {
         Map<String, Object> result = new HashMap<>();
         String code = req.get("code") == null ? "" : req.get("code").toString().toUpperCase().trim();
@@ -135,15 +136,15 @@ public class CouponController {
         return result;
     }
 
-    @PostMapping("/mark-used")
-    public ResponseEntity<?> markUsed(@RequestBody Map<String, String> body) {
-        String code = body.getOrDefault("code", "").toUpperCase().trim();
-        Optional<Coupon> opt = couponRepository.findByCode(code);
+    @PostMapping("/{code}/usages")
+    public ResponseEntity<?> markUsed(@PathVariable String code) {
+        String cleanCode = code.toUpperCase().trim();
+        Optional<Coupon> opt = couponRepository.findByCode(cleanCode);
         if (opt.isEmpty()) return ResponseEntity.notFound().build();
         Coupon c = opt.get();
         c.setUsedCount((c.getUsedCount() == null ? 0 : c.getUsedCount()) + 1);
         couponRepository.save(c);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     private static Double toDouble(Object o) {

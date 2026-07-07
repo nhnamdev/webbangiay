@@ -5,6 +5,7 @@ import com.zestfoot.backend.entity.User;
 import com.zestfoot.backend.repository.PointTransactionRepository;
 import com.zestfoot.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +15,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/points")
+@RequestMapping("/api/users")
 public class PointController {
 
     @Autowired
@@ -23,12 +24,12 @@ public class PointController {
     @Autowired
     private UserRepository userRepository;
 
-    @GetMapping("/user/{userId}/transactions")
+    @GetMapping("/{userId}/point-transactions")
     public List<PointTransaction> transactions(@PathVariable Long userId) {
         return transactionRepository.findByUserIdOrderByCreatedAtDesc(userId);
     }
 
-    @PostMapping("/user/{userId}")
+    @PostMapping("/{userId}/point-transactions")
     @Transactional
     public ResponseEntity<?> apply(@PathVariable Long userId, @RequestBody Map<String, Object> body) {
         Optional<User> opt = userRepository.findById(userId);
@@ -53,7 +54,7 @@ public class PointController {
         tx.setReason(reason);
         transactionRepository.save(tx);
 
-        return ResponseEntity.ok(Map.of("points", next, "transaction", tx));
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("points", next, "transaction", tx));
     }
 
     private static Integer toInt(Object o) {

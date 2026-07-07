@@ -28,7 +28,7 @@ const NotificationPage = () => {
                 setLoading(true);
 
                 const orders = await orderService.getOrdersByUser(user.email).catch(() => []);
-                const vouchers = user?.id ? await get(`/vouchers/user/${user.id}`).catch(() => []) : [];
+                const vouchers = user?.id ? await get(`/users/${user.id}/vouchers`).catch(() => []) : [];
 
                 const orderNotifs = (orders || []).map(order => {
                     let title;
