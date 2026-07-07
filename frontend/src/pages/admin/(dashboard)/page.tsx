@@ -28,6 +28,17 @@ const parseCustomer = (raw: any) => {
   try { return JSON.parse(raw); } catch { return null; }
 };
 
+const normalizeOrder = (raw: any) => {
+  const customerRaw = raw?.customerJson ?? raw?.customer ?? null;
+  return {
+    ...raw,
+    customerJson: customerRaw,
+    totalAmount: raw?.totalAmount ?? raw?.total_amount ?? 0,
+    paymentMethod: raw?.paymentMethod ?? raw?.payment_method ?? null,
+    createdAt: raw?.createdAt ?? raw?.created_at ?? null,
+  };
+};
+
 export default function AdminDashboard() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [recentOrders, setRecentOrders] = useState<any[]>([]);
@@ -42,19 +53,21 @@ export default function AdminDashboard() {
           get("/coupons"), get("/news"),
         ]);
 
-        const revenue = (orders || [])
+        const normalizedOrders = (orders || []).map(normalizeOrder);
+
+        const revenue = normalizedOrders
           .filter((o: any) => o.status === "delivered")
           .reduce((sum: number, o: any) => sum + (Number(o.totalAmount) || 0), 0);
-        const pending = (orders || []).filter((o: any) => o.status === "pending").length;
+        const pending = normalizedOrders.filter((o: any) => o.status === "pending").length;
 
         setStats({
           products: products?.length || 0, brands: brands?.length || 0,
-          orders: orders?.length || 0, users: usersResp?.total || 0,
+          orders: normalizedOrders?.length || 0, users: usersResp?.total || 0,
           coupons: coupons?.length || 0, news: news?.length || 0,
           revenue, pending,
         });
 
-        const sorted = [...(orders || [])].sort((a: any, b: any) =>
+        const sorted = [...normalizedOrders].sort((a: any, b: any) =>
           new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
         );
         setRecentOrders(sorted.slice(0, 5));
@@ -73,7 +86,7 @@ export default function AdminDashboard() {
     {
       title: 'Khách hàng', key: 'customer',
       render: (_: any, r: any) => {
-        const c = parseCustomer(r.customerJson);
+        const c = parseCustomer(r.customerJson ?? r.customer);
         return c?.name || c?.fullName || r.email || '—';
       },
     },

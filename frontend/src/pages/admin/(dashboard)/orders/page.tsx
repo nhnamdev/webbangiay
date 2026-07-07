@@ -22,6 +22,25 @@ const parseJSON = (raw: any) => {
   try { return JSON.parse(raw); } catch { return null; }
 };
 
+const normalizeOrder = (raw: any) => {
+  const customerRaw = raw?.customerJson ?? raw?.customer ?? null;
+  const itemsRaw = raw?.orderItems ?? raw?.items ?? [];
+
+  return {
+    ...raw,
+    customerJson: customerRaw,
+    orderItems: Array.isArray(itemsRaw) ? itemsRaw : (parseJSON(itemsRaw) || []),
+    totalAmount: raw?.totalAmount ?? raw?.total_amount ?? 0,
+    subTotal: raw?.subTotal ?? raw?.sub_total ?? 0,
+    shippingFee: raw?.shippingFee ?? raw?.shipping_fee ?? 0,
+    paymentMethod: raw?.paymentMethod ?? raw?.payment_method ?? null,
+    createdAt: raw?.createdAt ?? raw?.created_at ?? null,
+    discountAmount: raw?.discountAmount ?? raw?.discount ?? 0,
+    voucherDiscount: raw?.voucherDiscount ?? raw?.voucher_discount ?? 0,
+    pointDiscount: raw?.pointDiscount ?? raw?.point_discount ?? 0,
+  };
+};
+
 export default function OrdersAdmin() {
   const [orders, setOrders] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
@@ -34,8 +53,8 @@ export default function OrdersAdmin() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const all: any[] = await get("/orders");
-      let list = all;
+      const all: any[] = (await get("/orders")) || [];
+      let list = all.map(normalizeOrder);
       if (filterStatus) list = list.filter(o => o.status === filterStatus);
       list.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
       setTotal(list.length);
@@ -68,14 +87,14 @@ export default function OrdersAdmin() {
     {
       title: 'Khách hàng', key: 'customer', width: 140,
       render: (_: any, r: any) => {
-        const c = parseJSON(r.customerJson);
+        const c = parseJSON(r.customerJson ?? r.customer);
         return c?.name || c?.fullName || r.email || '—';
       },
     },
     {
       title: 'SĐT', key: 'phone', width: 110,
       render: (_: any, r: any) => {
-        const c = parseJSON(r.customerJson);
+        const c = parseJSON(r.customerJson ?? r.customer);
         return c?.phone || '—';
       },
     },
@@ -158,7 +177,8 @@ export default function OrdersAdmin() {
         width={640}
       >
         {detail && (() => {
-          const c = parseJSON(detail.customerJson);
+          const c = parseJSON(detail.customerJson ?? detail.customer);
+          const items = detail.orderItems ?? detail.items ?? [];
           return (
             <div>
               <div style={{ marginBottom: 20 }}>
@@ -190,21 +210,29 @@ export default function OrdersAdmin() {
               <Divider style={{ margin: '12px 0' }} />
 
               <Text strong style={{ display: 'block', marginBottom: 8 }}>🛍️ Sản phẩm</Text>
-              {(detail.orderItems || []).map((item: any, i: number) => (
-                <Card key={i} size="small" style={{ marginBottom: 8 }}>
-                  <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                    {item.product?.image && (
-                      <img src={item.product.image} alt="" style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 8 }} />
-                    )}
-                    <div style={{ flex: 1 }}>
-                      <Text strong>{item.product?.name || `SP #${item.product?.id}`}</Text>
-                      <br />
-                      <Text type="secondary">Size: {item.size} · SL: {item.quantity}</Text>
+              {items.map((item: any, i: number) => {
+                const product = item.product || item;
+                const name = product?.name || item.product_name || `SP #${product?.id || item.product_id || i + 1}`;
+                const image = product?.image || item.image || null;
+                const quantity = item.quantity || 0;
+                const price = item.price ?? product?.price ?? 0;
+
+                return (
+                  <Card key={i} size="small" style={{ marginBottom: 8 }}>
+                    <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                      {image && (
+                        <img src={image} alt="" style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 8 }} />
+                      )}
+                      <div style={{ flex: 1 }}>
+                        <Text strong>{name}</Text>
+                        <br />
+                        <Text type="secondary">Size: {item.size || '—'} · SL: {quantity}</Text>
+                      </div>
+                      <Text strong style={{ color: '#818cf8' }}>{fmt(Number(price) * Number(quantity))}</Text>
                     </div>
-                    <Text strong style={{ color: '#818cf8' }}>{fmt((item.price || 0) * (item.quantity || 0))}</Text>
-                  </div>
-                </Card>
-              ))}
+                  </Card>
+                );
+              })}
 
               <Divider style={{ margin: '12px 0' }} />
 
@@ -212,7 +240,7 @@ export default function OrdersAdmin() {
                 {[
                   ['Tạm tính', fmt(detail.subTotal)],
                   ['Phí ship', fmt(detail.shippingFee)],
-                  ['Giảm giá', `- ${fmt(detail.discountAmount || 0)}`],
+                  ['Giảm giá', `- ${fmt(detail.discountAmount ?? detail.discount ?? 0)}`],
                 ].map(([k, v]) => (
                   <div key={k} style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <Text type="secondary">{k}</Text>
@@ -221,7 +249,7 @@ export default function OrdersAdmin() {
                 ))}
                 <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #f0f0f0', paddingTop: 12 }}>
                   <Text strong>Tổng cộng</Text>
-                  <Text strong style={{ color: '#818cf8', fontSize: 16 }}>{fmt(detail.totalAmount)}</Text>
+                  <Text strong style={{ color: '#818cf8', fontSize: 16 }}>{fmt(detail.totalAmount ?? detail.total_amount ?? 0)}</Text>
                 </div>
               </div>
             </div>
