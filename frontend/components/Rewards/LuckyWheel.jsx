@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import './LuckyWheel.css';
-import { get, post, put } from '../../services/http';
+import { get, post, patch } from '../../services/http';
 import { useAuth } from '../../context/AuthContext';
 import { X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -64,7 +64,7 @@ const LuckyWheel = () => {
     const processReward = async (prize) => {
         try {
             if (typeof prize.value === 'number' && prize.value > 0) {
-                await post(`/points/user/${user.id}`, {
+                await post(`/users/${user.id}/point-transactions`, {
                     type: 'earn',
                     amount: prize.value,
                     reason: `Trúng thưởng Lucky Wheel: ${prize.name}`,
@@ -84,7 +84,7 @@ const LuckyWheel = () => {
                 alert(`Bạn nhận được mã: ${code}`);
             }
 
-            await put(`/users/${user.id}`, { lastLuckySpin: new Date().toISOString() });
+            await patch(`/users/${user.id}`, { lastLuckySpin: new Date().toISOString() });
 
             window.dispatchEvent(new Event('pointsUpdated'));
             checkEligibility();

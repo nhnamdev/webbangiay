@@ -32,14 +32,14 @@ const Membership = () => {
             const profile = await get(`/users/${user.id}`);
             if (profile) setPoints(profile.points || 0);
 
-            const transactions = await get(`/points/user/${user.id}/transactions`).catch(() => []);
+            const transactions = await get(`/users/${user.id}/point-transactions`).catch(() => []);
             setHistory((transactions || []).map(t => ({
                 ...t,
                 date: new Date(t.createdAt).toLocaleDateString('vi-VN'),
                 time: new Date(t.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
             })));
 
-            const voucherList = await get(`/vouchers/user/${user.id}`).catch(() => []);
+            const voucherList = await get(`/users/${user.id}/vouchers`).catch(() => []);
             setVouchers(voucherList || []);
         } catch (error) {
             console.error('Error loading membership data:', error.message || error);
@@ -61,7 +61,7 @@ const Membership = () => {
         }
 
         try {
-            await post(`/points/user/${user.id}`, {
+            await post(`/users/${user.id}/point-transactions`, {
                 type: amount >= 0 ? 'earn' : 'spend',
                 amount: Math.abs(amount),
                 reason,
@@ -82,7 +82,7 @@ const Membership = () => {
         if (!confirm('Bạn có chắc muốn dùng 200 xu để đổi voucher 200k không?')) return;
 
         try {
-            await post(`/points/user/${user.id}`, {
+            await post(`/users/${user.id}/point-transactions`, {
                 type: 'spend',
                 amount: 200,
                 reason: 'Đổi xu lấy Voucher 200k',

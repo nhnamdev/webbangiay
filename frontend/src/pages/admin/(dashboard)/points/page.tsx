@@ -21,7 +21,7 @@ export default function PointsAdmin() {
       const users: any = await get("/users", { params: { page: 1, size: 200 } });
       const transactionsList: any[] = [];
       await Promise.all((users.data || []).map(async (u: any) => {
-        const txs = await get(`/points/user/${u.id}/transactions`).catch(() => []);
+        const txs = await get(`/users/${u.id}/point-transactions`).catch(() => []);
         txs.forEach((t: any) => transactionsList.push({ ...t, _user: u }));
       }));
       let list = transactionsList;
@@ -40,7 +40,7 @@ export default function PointsAdmin() {
     if (!form.userId || !form.reason || !form.amount) return;
     setSaving(true);
     try {
-      await post(`/points/user/${form.userId}`, {
+      await post(`/users/${form.userId}/point-transactions`, {
         type: form.type,
         amount: form.amount,
         reason: form.reason,

@@ -42,7 +42,7 @@ const ShoeMatchGame = ({ onClose }) => {
 
     const checkDailyLimit = async () => {
         try {
-            const all = await get(`/points/user/${user.id}/transactions`);
+            const all = await get(`/users/${user.id}/point-transactions`);
             const startOfDay = new Date(new Date().setHours(0, 0, 0, 0)).getTime();
             const today = (all || []).filter(t =>
                 t.reason === 'Play Shoe Match' && new Date(t.createdAt).getTime() >= startOfDay
@@ -110,7 +110,7 @@ const ShoeMatchGame = ({ onClose }) => {
         if (dailyPlaysLeft <= 0) return;
 
         // Deduct play
-        await post(`/points/user/${user.id}`, {
+        await post(`/users/${user.id}/point-transactions`, {
             type: 'spend',
             amount: 0,
             reason: 'Play Shoe Match',

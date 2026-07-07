@@ -2,7 +2,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { Table, Button, Modal, Tag, Input, InputNumber, Descriptions, Card, Statistic, Row, Col, Space, message, Typography, List } from "antd";
 import { SearchOutlined, EyeOutlined, ReloadOutlined } from '@ant-design/icons';
-import { get, put as putReq } from "@/services/http";
+import { get, patch as patchReq } from "@/services/http";
 
 const { Title, Text } = Typography;
 
@@ -39,8 +39,8 @@ export default function UsersAdmin() {
   const loadDetail = async (user: User) => {
     try {
       const [transactions, vouchers, orders] = await Promise.all([
-        get(`/points/user/${user.id}/transactions`).catch(() => []),
-        get(`/vouchers/user/${user.id}`).catch(() => []),
+        get(`/users/${user.id}/point-transactions`).catch(() => []),
+        get(`/users/${user.id}/vouchers`).catch(() => []),
         get(`/orders/user/${user.id}`).catch(() => []),
       ]);
       setDetail({ ...user, transactions, vouchers, orders: orders.slice(0, 5) });
@@ -54,7 +54,7 @@ export default function UsersAdmin() {
     if (!detail) return;
     setSaving(true);
     try {
-      await putReq(`/users/${detail.id}`, { points: pointsInput });
+      await patchReq(`/users/${detail.id}`, { points: pointsInput });
       message.success("Đã cập nhật điểm!");
       setDetail((d: any) => ({ ...d, points: pointsInput }));
       fetchData();

@@ -53,7 +53,7 @@ const SnakeGame = ({ onClose }) => {
 
         const checkDailyLimit = async () => {
             try {
-                const all = await get(`/points/user/${user.id}/transactions`);
+                const all = await get(`/users/${user.id}/point-transactions`);
                 const startOfDay = new Date(new Date().setHours(0, 0, 0, 0)).getTime();
                 const today = (all || []).filter(t =>
                     t.reason === 'Play Snake Game' && new Date(t.createdAt).getTime() >= startOfDay
@@ -106,7 +106,7 @@ const SnakeGame = ({ onClose }) => {
 
         // Record play attempt
         try {
-            await post(`/points/user/${user.id}`, {
+            await post(`/users/${user.id}/point-transactions`, {
                 type: 'spend',
                 amount: 0,
                 reason: 'Play Snake Game',

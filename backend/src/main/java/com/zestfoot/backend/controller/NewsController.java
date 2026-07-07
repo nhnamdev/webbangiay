@@ -4,6 +4,7 @@ import com.zestfoot.backend.entity.News;
 import com.zestfoot.backend.repository.NewsRepository;
 import com.zestfoot.backend.service.R2StorageService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,15 +32,15 @@ public class NewsController {
     }
 
     @PostMapping(consumes = {"multipart/form-data"})
-    public News create(
+    public ResponseEntity<News> create(
             @ModelAttribute News news,
             @RequestPart(value = "imageFile", required = false) MultipartFile imageFile
     ) {
         applyUploadedImage(news, imageFile);
-        return newsRepository.save(news);
+        return ResponseEntity.status(HttpStatus.CREATED).body(newsRepository.save(news));
     }
 
-    @PutMapping(value = "/{id}", consumes = {"multipart/form-data"})
+    @PatchMapping(value = "/{id}", consumes = {"multipart/form-data"})
     public ResponseEntity<News> update(
             @PathVariable Long id,
             @ModelAttribute News news,

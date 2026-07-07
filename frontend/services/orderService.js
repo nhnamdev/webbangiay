@@ -1,4 +1,4 @@
-import { get, post, put } from './http';
+import { get, post, patch } from './http';
 
 const orderService = {
     getOrdersByUser: async (email) => {
@@ -30,7 +30,7 @@ const orderService = {
 
     cancelOrder: async (id, reason) => {
         try {
-            return await put(`/orders/${id}/status`, { status: 'cancelled', reason });
+            return await patch(`/orders/${id}/status`, { status: 'cancelled', reason });
         } catch (error) {
             console.error(`Error cancelling order ${id}:`, error.message);
             throw error;
