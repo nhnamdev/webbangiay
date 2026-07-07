@@ -1,11 +1,10 @@
-import OpenAI from 'openai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { get } from '../../services/http';
 
-const apiKey = import.meta.env.VITE_OPENAI_API_KEY || import.meta.env.OPENAI_API_KEY || import.meta.env.NEXT_PUBLIC_OPENAI_API_KEY;
+const apiKey = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY || 'CAMSURoyKhBlLVE3WEZydnQ5Qmt0NkxNMg5RN1hGcnZ0OUJrdDZMTToOYnBaUFk5bmkyT3NoX00gBCoXCgFzEhBlLVE3WEZydnQ5Qmt0NkxNGAEwARgHILeB2r4CSggQARgBIAEoAQ';
 
-const openai = apiKey ? new OpenAI({ apiKey, dangerouslyAllowBrowser: true }) : null;
-
-const CHAT_MODEL = 'gpt-4o-mini';
+const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
+const model = genAI ? genAI.getGenerativeModel({ model: 'gemini-1.5-flash' }) : null;
 
 let cachedProducts = null;
 const VND_FORMATTER = new Intl.NumberFormat('vi-VN');
@@ -120,35 +119,20 @@ export async function processChat(message) {
                       .join('\n\n')}`
                 : '[RAG CONTEXT]: Khong tim thay san pham sat tu khoa.';
 
-        if (!openai) {
+        if (!model) {
             return buildFallbackReply(relevantProducts);
         }
 
         try {
-            const completion = await openai.chat.completions.create({
-                model: CHAT_MODEL,
-                temperature: 0.4,
-                messages: [
-                    { role: 'system', content: SYSTEM_PROMPT },
-                    { role: 'system', content: `Hay ghi nho thong tin cua hang sau:\n${STORE_KNOWLEDGE_BASE}` },
-                    { role: 'user', content: `${contextText}\n\n[USER QUERY]: ${message}` },
-                ],
-            });
+            const prompt = `${SYSTEM_PROMPT}\n\nHay ghi nho thong tin cua hang sau:\n${STORE_KNOWLEDGE_BASE}\n\n${contextText}\n\n[USER QUERY]: ${message}`;
+            
+            const result = await model.generateContent(prompt);
+            const responseText = result.response.text();
 
-            return completion.choices?.[0]?.message?.content || 'Xin loi, toi chua the tra loi luc nay.';
-        } catch (openaiError) {
-            console.error('Loi OpenAI chat-rag:', openaiError);
-
-            const isQuotaOrRateLimit =
-                openaiError?.status === 429 ||
-                openaiError?.code === 'insufficient_quota' ||
-                /429|quota|rate limit/i.test(openaiError?.message || '');
-
-            if (isQuotaOrRateLimit) {
-                return buildFallbackReply(relevantProducts);
-            }
-
-            throw openaiError;
+            return responseText || 'Xin loi, toi chua the tra loi luc nay.';
+        } catch (geminiError) {
+            console.error('Loi Gemini chat-rag:', geminiError);
+            return buildFallbackReply(relevantProducts);
         }
     } catch (error) {
         console.error('Loi API chat-rag:', error);
