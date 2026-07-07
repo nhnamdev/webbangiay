@@ -4,14 +4,27 @@ const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
 
 const http = axios.create({
     baseURL,
-    headers: { 'Content-Type': 'application/json' },
 });
 
 http.interceptors.request.use((config) => {
+    const isFormData = typeof FormData !== 'undefined' && config.data instanceof FormData;
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
     if (token) {
         config.headers = config.headers || {};
         config.headers.Authorization = `Bearer ${token}`;
+    }
+    config.headers = config.headers || {};
+    if (isFormData) {
+        if (typeof config.headers.set === 'function') {
+            config.headers.set('Content-Type', null);
+        } else {
+            delete config.headers['Content-Type'];
+            delete config.headers['content-type'];
+        }
+    } else if (typeof config.headers.set === 'function') {
+        config.headers.set('Content-Type', 'application/json');
+    } else {
+        config.headers['Content-Type'] = 'application/json';
     }
     return config;
 });

@@ -37,6 +37,8 @@ export default function ProductsAdmin() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [form] = Form.useForm();
 
   const fetchData = useCallback(async () => {
@@ -59,27 +61,61 @@ export default function ProductsAdmin() {
   const openCreate = () => {
     setEditId(null);
     form.resetFields();
+    setImageFile(null);
+    setImagePreview(null);
     setModalOpen(true);
   };
 
   const openEdit = (p: Product) => {
     setEditId(p.id);
     form.setFieldsValue(p);
+    setImageFile(null);
+    setImagePreview(p.image || null);
     setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+    setImageFile(null);
+    setImagePreview(null);
+  };
+
+  const handleImageSelect = (file?: File | null) => {
+    setImageFile(file || null);
+    if (file) {
+      const previewUrl = URL.createObjectURL(file);
+      setImagePreview(previewUrl);
+      form.setFieldValue('image', null);
+    } else {
+      setImagePreview(editId ? form.getFieldValue('image') || null : null);
+    }
   };
 
   const handleSave = async () => {
     const values = await form.validateFields();
+    if (!editId && !imageFile) {
+      message.error("Vui lòng chọn ảnh sản phẩm từ máy tính");
+      return;
+    }
     setSaving(true);
     try {
+      const payload = new FormData();
+      Object.entries(values).forEach(([key, value]) => {
+        if (value === undefined || value === null || value === "") return;
+        payload.append(key, typeof value === "boolean" ? String(value) : String(value));
+      });
+      if (imageFile) {
+        payload.append("imageFile", imageFile);
+      }
+
       if (editId) {
-        await putReq(`/products/${editId}`, values);
+        await putReq(`/products/${editId}`, payload);
         message.success("Đã cập nhật sản phẩm!");
       } else {
-        await post("/products", values);
+        await post("/products", payload);
         message.success("Đã thêm sản phẩm!");
       }
-      setModalOpen(false);
+      closeModal();
       fetchData();
     } catch (e: any) {
       if (e?.message) message.error(e.message);
@@ -189,7 +225,7 @@ export default function ProductsAdmin() {
       <Modal
         title={editId ? "Sửa sản phẩm" : "Thêm sản phẩm"}
         open={modalOpen}
-        onCancel={() => setModalOpen(false)}
+        onCancel={closeModal}
         onOk={handleSave}
         confirmLoading={saving}
         okText="Lưu"
@@ -229,8 +265,29 @@ export default function ProductsAdmin() {
               <Input placeholder="sneakers, casual..." />
             </Form.Item>
           </Space>
-          <Form.Item name="image" label="URL ảnh">
-            <Input placeholder="https://..." />
+          <Form.Item name="image" hidden>
+            <Input />
+          </Form.Item>
+          <Form.Item label="Ảnh sản phẩm">
+            <Space orientation="vertical" style={{ width: '100%' }} size={12}>
+              <Input
+                type="file"
+                accept="image/*"
+                onChange={(e) => handleImageSelect(e.target.files?.[0] || null)}
+              />
+              {imagePreview && (
+                <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    style={{ width: 72, height: 72, objectFit: 'cover', borderRadius: 12, border: '1px solid #e5e7eb' }}
+                  />
+                  <Text type="secondary">
+                    {editId ? 'Chọn ảnh mới để thay ảnh hiện tại.' : 'Ảnh sẽ được tải lên R2 và lưu URL vào cơ sở dữ liệu.'}
+                  </Text>
+                </div>
+              )}
+            </Space>
           </Form.Item>
           <Form.Item label="Tags">
             <Form.Item name="isNew" valuePropName="checked" style={{ display: 'inline-block', marginBottom: 0 }}>
