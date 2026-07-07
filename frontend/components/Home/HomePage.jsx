@@ -1,6 +1,6 @@
 
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import BannerCarousel from '../Banner/BannerCarousel';
 import ProductCard from '../ProductCard/ProductCard';
 import ProductCarousel from '../ProductCarousel';
@@ -10,42 +10,20 @@ import TrendSection from './TrendSection';
 import ScrollingLogos from './ScrollingLogos';
 import ScrollingPromotion from './ScrollingPromotion';
 import './HomePage.css';
+import { useQuery } from '@tanstack/react-query';
 
 import { useLanguage } from '../../context/LanguageContext';
 
 const HomePage = () => {
     const { t } = useLanguage();
-    const [brands, setBrands] = useState([]);
-    const [newArrivals, setNewArrivals] = useState([]);
-    const [saleProducts, setSaleProducts] = useState([]);
-    const [asicsProducts, setAsicsProducts] = useState([]);
-    const [trendingProducts, setTrendingProducts] = useState([]);
 
+    // Sử dụng React Query để fetch và cache dữ liệu song song
+    const { data: brands = [] } = useQuery({ queryKey: ['brands'], queryFn: getBrands });
+    const { data: newArrivals = [] } = useQuery({ queryKey: ['newArrivals'], queryFn: getNewArrivals });
+    const { data: saleProducts = [] } = useQuery({ queryKey: ['saleProducts'], queryFn: getSaleProducts });
+    const { data: asicsProducts = [] } = useQuery({ queryKey: ['asicsProducts'], queryFn: getAsicsProducts });
+    const { data: trendingProducts = [] } = useQuery({ queryKey: ['trendingProducts'], queryFn: getTrendingProducts });
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                // Fetch all data in parallel for efficiency
-                const [brandsData, newData, saleData, asicsData, trendingData] = await Promise.all([
-                    getBrands(),
-                    getNewArrivals(),
-                    getSaleProducts(),
-                    getAsicsProducts(),
-                    getTrendingProducts()
-                ]);
-
-                setBrands(brandsData);
-                setNewArrivals(newData);
-                setSaleProducts(saleData);
-                setAsicsProducts(asicsData);
-                setTrendingProducts(trendingData);
-            } catch (error) {
-                console.error("Failed to fetch home page data:", error);
-            }
-        };
-
-        fetchData();
-    }, []);
 
 
     return (
