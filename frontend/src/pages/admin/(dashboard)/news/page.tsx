@@ -2,7 +2,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { Card, Row, Col, Button, Modal, Form, Input, Space, Popconfirm, message, Spin, Typography, Empty } from "antd";
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
-import { get, post, put as putReq, del } from "@/services/http";
+import { get, post, patch as patchReq, del } from "@/services/http";
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -91,7 +91,7 @@ export default function NewsAdmin() {
     try {
       const payload = buildFormData(values, imageFile);
       if (editId) {
-        await putReq(`/news/${editId}`, payload);
+        await patchReq(`/news/${editId}`, payload);
         message.success("Đã lưu bài viết!");
       } else {
         await post("/news", payload);
