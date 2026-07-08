@@ -3,6 +3,7 @@ package com.zestfoot.backend.controller;
 import com.zestfoot.backend.dto.UserResponse;
 import com.zestfoot.backend.entity.User;
 import com.zestfoot.backend.repository.UserRepository;
+import com.zestfoot.backend.security.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -11,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -22,6 +22,9 @@ public class AuthController {
 
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
+
+    @Autowired
+    private JwtService jwtService;
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody Map<String, String> body) {
@@ -81,7 +84,7 @@ public class AuthController {
 
     private Map<String, Object> session(User u) {
         Map<String, Object> s = new HashMap<>();
-        s.put("access_token", "zf-" + u.getId() + "-" + UUID.randomUUID());
+        s.put("access_token", jwtService.generateToken(u));
         s.put("token_type", "bearer");
         s.put("expires_in", 60 * 60 * 8);
         s.put("user", UserResponse.from(u));
