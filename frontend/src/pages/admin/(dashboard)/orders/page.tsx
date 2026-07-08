@@ -2,7 +2,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { Table, Tag, Button, Select, Modal, Descriptions, Space, message, Spin, Typography, Input, Card, Divider } from "antd";
 import { SearchOutlined, EyeOutlined } from '@ant-design/icons';
-import { get, put as putReq } from "@/services/http";
+import { get, patch as patchReq } from "@/services/http";
 
 const { Title, Text } = Typography;
 
@@ -68,7 +68,7 @@ export default function OrdersAdmin() {
 
   const updateStatus = async (id: number, status: string) => {
     try {
-      await putReq(`/orders/${id}/status`, { status });
+      await patchReq(`/orders/${id}/status`, { status });
       message.success("Đã cập nhật trạng thái!");
       if (detail?.id === id) setDetail((d: any) => ({ ...d, status }));
       fetchData();
