@@ -43,8 +43,24 @@ const OrderDetail = () => {
                     return;
                 }
 
+                const parseJSONRobust = (val, defaultVal = {}) => {
+                    if (val == null) return defaultVal;
+                    let temp = val;
+                    if (typeof temp === 'string') {
+                        try {
+                            temp = JSON.parse(temp);
+                            if (typeof temp === 'string') {
+                                temp = JSON.parse(temp);
+                            }
+                        } catch (e) {
+                            return defaultVal;
+                        }
+                    }
+                    return temp || defaultVal;
+                };
+
                 const userEmail = user.email?.toLowerCase();
-                const customer = typeof data.customer === 'string' ? JSON.parse(data.customer) : (data.customer || {});
+                const customer = parseJSONRobust(data.customer);
                 const customerEmail = customer.email?.toLowerCase();
 
                 if (userEmail !== customerEmail) {
@@ -108,8 +124,24 @@ const OrderDetail = () => {
 
     if (!order) return null;
 
-    const orderCustomer = typeof order.customer === 'string' ? JSON.parse(order.customer) : (order.customer || {});
-    const items = typeof order.items === 'string' ? JSON.parse(order.items) : (Array.isArray(order.items) ? order.items : []);
+    const parseJSONRobust = (val, defaultVal = {}) => {
+        if (val == null) return defaultVal;
+        let temp = val;
+        if (typeof temp === 'string') {
+            try {
+                temp = JSON.parse(temp);
+                if (typeof temp === 'string') {
+                    temp = JSON.parse(temp);
+                }
+            } catch (e) {
+                return defaultVal;
+            }
+        }
+        return temp || defaultVal;
+    };
+
+    const orderCustomer = parseJSONRobust(order.customer);
+    const items = parseJSONRobust(order.items, []);
 
     return (
         <div className="shopee-order-detail">

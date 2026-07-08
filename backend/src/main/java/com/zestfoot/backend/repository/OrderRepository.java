@@ -11,6 +11,6 @@ import java.util.List;
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
-    @Query(value = "SELECT * FROM orders WHERE JSON_UNQUOTE(JSON_EXTRACT(customer, '$.email')) = :email ORDER BY created_at DESC", nativeQuery = true)
+    @Query(value = "SELECT * FROM orders WHERE JSON_UNQUOTE(JSON_EXTRACT(customer, '$.email')) = :email OR customer LIKE CONCAT('%', :email, '%') ORDER BY created_at DESC", nativeQuery = true)
     List<Order> findByCustomerEmail(@Param("email") String email);
 }
