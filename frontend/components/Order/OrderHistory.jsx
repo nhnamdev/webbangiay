@@ -13,6 +13,22 @@ const OrderHistory = () => {
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
+    const parseJSONRobust = (val, defaultVal = {}) => {
+        if (val == null) return defaultVal;
+        let temp = val;
+        if (typeof temp === 'string') {
+            try {
+                temp = JSON.parse(temp);
+                if (typeof temp === 'string') {
+                    temp = JSON.parse(temp);
+                }
+            } catch (e) {
+                return defaultVal;
+            }
+        }
+        return temp || defaultVal;
+    };
+
     const [activeStatus, setActiveStatus] = useState('all');
 
     useEffect(() => {
@@ -96,7 +112,7 @@ const OrderHistory = () => {
             ) : (
                 <div className="orders-list">
                     {filteredOrders.map((order) => {
-                        const orderItems = typeof order.items === 'string' ? JSON.parse(order.items) : (Array.isArray(order.items) ? order.items : []);
+                        const orderItems = parseJSONRobust(order.items, []);
                         return (<div key={order.id} className="order-card">
                             <div className="order-header">
                                 <div className="order-id">
