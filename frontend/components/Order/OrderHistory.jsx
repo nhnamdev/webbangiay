@@ -112,7 +112,9 @@ const OrderHistory = () => {
             ) : (
                 <div className="orders-list">
                     {filteredOrders.map((order) => {
-                        const orderItems = parseJSONRobust(order.items, []);
+                        const orderCustomer = parseJSONRobust(order.customer);
+                        const customerItems = Array.isArray(orderCustomer.items) ? orderCustomer.items : [];
+                        const orderItems = customerItems.length > 0 ? customerItems : parseJSONRobust(order.items, []);
                         return (<div key={order.id} className="order-card">
                             <div className="order-header">
                                 <div className="order-id">
@@ -141,10 +143,10 @@ const OrderHistory = () => {
                                 </div>
                                 <div className="order-items-preview-visual">
                                     {orderItems.slice(0, 4).map((item, idx) => (
-                                        <div key={idx} className="item-preview-visual" title={`${item.product_name} x${item.quantity}`}>
+                                        <div key={idx} className="item-preview-visual" title={`${item.product_name || item.productName || item.name || `Sản phẩm #${item.product_id || item.productId || idx + 1}`} x${item.quantity}`}>
                                             <div className="preview-image-container">
                                                 {item.image ? (
-                                                    <img src={item.image} alt={item.product_name} />
+                                                    <img src={item.image} alt={item.product_name || item.productName || item.name || 'Sản phẩm'} />
                                                 ) : (
                                                     <div className="no-image-preview"><Package size={16} /></div>
                                                 )}

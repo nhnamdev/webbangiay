@@ -141,7 +141,8 @@ const OrderDetail = () => {
     };
 
     const orderCustomer = parseJSONRobust(order.customer);
-    const items = parseJSONRobust(order.items, []);
+    const customerItems = Array.isArray(orderCustomer.items) ? orderCustomer.items : [];
+    const items = customerItems.length > 0 ? customerItems : parseJSONRobust(order.items, []);
 
     return (
         <div className="shopee-order-detail">
@@ -279,7 +280,7 @@ const OrderDetail = () => {
                                 <img src={item.image || ''} alt="" />
                             </div>
                             <div className="p-info">
-                                <div className="p-name">{item.productName || item.product_name}</div>
+                                <div className="p-name">{item.productName || item.product_name || item.name || `Sản phẩm #${item.product_id || item.productId || idx + 1}`}</div>
                                 <div className="p-variant">Phân loại hàng: {item.size || 'Mặc định'}</div>
                                 <div className="p-qty">x{item.quantity}</div>
                             </div>
