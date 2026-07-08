@@ -2,7 +2,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { Table, Button, Modal, Form, Input, InputNumber, Select, Tag, Space, Popconfirm, message, Spin, Typography } from "antd";
 import { PlusOutlined, EditOutlined, DeleteOutlined, SearchOutlined } from '@ant-design/icons';
-import { get, post, put as putReq, del } from "@/services/http";
+import { get, post, patch as patchReq, del } from "@/services/http";
 
 const { Title, Text } = Typography;
 
@@ -109,7 +109,7 @@ export default function ProductsAdmin() {
       }
 
       if (editId) {
-        await putReq(`/products/${editId}`, payload);
+        await patchReq(`/products/${editId}`, payload);
         message.success("Đã cập nhật sản phẩm!");
       } else {
         await post("/products", payload);
