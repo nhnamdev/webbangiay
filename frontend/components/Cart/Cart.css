@@ -117,6 +117,49 @@
     border-bottom: 1px solid #ddd;
 }
 
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 15px;
+    color: #555;
+}
+
+.summary-total {
+    border-top: 1px solid #ddd;
+    padding-top: 15px;
+    margin-top: 15px;
+    font-weight: bold;
+    font-size: 1.2rem;
+    color: #000;
+}
+
+.pay-btn {
+    width: 100%;
+    padding: 15px;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-top: 20px;
+    transition: opacity 0.2s, transform 0.2s;
+}
+
+.pay-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+}
+
+.pay-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.cart-summary a:hover {
+    color: #000;
+}
+
 .empty-cart {
     text-align: center;
     padding: 50px 0;
