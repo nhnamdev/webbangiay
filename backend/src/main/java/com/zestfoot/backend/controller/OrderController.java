@@ -2,6 +2,7 @@ package com.zestfoot.backend.controller;
 
 import com.zestfoot.backend.entity.Order;
 import com.zestfoot.backend.repository.OrderRepository;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,7 +36,7 @@ public class OrderController {
     }
 
     @PostMapping
-    public ResponseEntity<Order> createOrder(@RequestBody Order order) {
+    public ResponseEntity<Order> createOrder(@Valid @RequestBody Order order) {
         if (order.getStatus() == null) order.setStatus("pending");
         if (order.getTotalAmount() == null) {
             double total = (order.getSubTotal() != null ? order.getSubTotal() : 0)

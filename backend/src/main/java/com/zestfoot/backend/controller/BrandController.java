@@ -2,6 +2,7 @@ package com.zestfoot.backend.controller;
 
 import com.zestfoot.backend.entity.Brand;
 import com.zestfoot.backend.repository.BrandRepository;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,12 +28,12 @@ public class BrandController {
     }
 
     @PostMapping
-    public ResponseEntity<Brand> create(@RequestBody Brand brand) {
+    public ResponseEntity<Brand> create(@Valid @RequestBody Brand brand) {
         return ResponseEntity.status(HttpStatus.CREATED).body(brandRepository.save(brand));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Brand> update(@PathVariable Long id, @RequestBody Brand brand) {
+    public ResponseEntity<Brand> update(@PathVariable Long id, @Valid @RequestBody Brand brand) {
         return brandRepository.findById(id).map(existing -> {
             brand.setId(existing.getId());
             return ResponseEntity.ok(brandRepository.save(brand));

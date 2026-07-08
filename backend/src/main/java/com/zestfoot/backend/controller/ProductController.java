@@ -3,6 +3,7 @@ package com.zestfoot.backend.controller;
 import com.zestfoot.backend.entity.Product;
 import com.zestfoot.backend.repository.ProductRepository;
 import com.zestfoot.backend.service.R2StorageService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -51,7 +52,7 @@ public class ProductController {
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Product> create(@RequestBody Product product) {
+    public ResponseEntity<Product> create(@Valid @RequestBody Product product) {
         return ResponseEntity.status(HttpStatus.CREATED).body(productRepository.save(product));
     }
 
@@ -65,7 +66,7 @@ public class ProductController {
     }
 
     @PatchMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Product> update(@PathVariable Long id, @RequestBody Product product) {
+    public ResponseEntity<Product> update(@PathVariable Long id, @Valid @RequestBody Product product) {
         return productRepository.findById(id).map(existing -> {
             mergeEditableFields(existing, product);
             return ResponseEntity.ok(productRepository.save(existing));

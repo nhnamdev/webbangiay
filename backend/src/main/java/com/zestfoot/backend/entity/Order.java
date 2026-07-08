@@ -3,6 +3,7 @@ package com.zestfoot.backend.entity;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 import java.time.LocalDateTime;
 
@@ -25,9 +26,12 @@ public class Order {
     @Column(columnDefinition = "json")
     private String items;
 
+    @NotNull(message = "Tạm tính không được để trống")
+    @PositiveOrZero(message = "Tạm tính phải lớn hơn hoặc bằng 0")
     @Column(name = "sub_total")
     private Double subTotal;
 
+    @PositiveOrZero(message = "Phí vận chuyển phải lớn hơn hoặc bằng 0")
     @Column(name = "shipping_fee")
     private Double shippingFee;
 

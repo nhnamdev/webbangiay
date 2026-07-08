@@ -4,6 +4,7 @@ import com.zestfoot.backend.entity.Coupon;
 import com.zestfoot.backend.entity.UserVoucher;
 import com.zestfoot.backend.repository.CouponRepository;
 import com.zestfoot.backend.repository.UserVoucherRepository;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,13 +37,13 @@ public class CouponController {
     }
 
     @PostMapping
-    public ResponseEntity<Coupon> create(@RequestBody Coupon coupon) {
+    public ResponseEntity<Coupon> create(@Valid @RequestBody Coupon coupon) {
         if (coupon.getCode() != null) coupon.setCode(coupon.getCode().toUpperCase().trim());
         return ResponseEntity.status(HttpStatus.CREATED).body(couponRepository.save(coupon));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Coupon> update(@PathVariable Long id, @RequestBody Coupon coupon) {
+    public ResponseEntity<Coupon> update(@PathVariable Long id, @Valid @RequestBody Coupon coupon) {
         return couponRepository.findById(id).map(existing -> {
             coupon.setId(existing.getId());
             if (coupon.getCode() != null) coupon.setCode(coupon.getCode().toUpperCase().trim());

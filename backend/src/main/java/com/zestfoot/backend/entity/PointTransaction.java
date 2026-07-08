@@ -1,6 +1,7 @@
 package com.zestfoot.backend.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 import java.time.LocalDateTime;
 
@@ -16,8 +17,11 @@ public class PointTransaction {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
+    @NotBlank(message = "Loại giao dịch không được để trống")
     private String type;
 
+    @NotNull(message = "Số điểm không được để trống")
+    @Positive(message = "Số điểm phải lớn hơn 0")
     private Integer amount;
 
     private String reason;

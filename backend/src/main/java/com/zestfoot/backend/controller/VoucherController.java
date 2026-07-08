@@ -2,6 +2,7 @@ package com.zestfoot.backend.controller;
 
 import com.zestfoot.backend.entity.UserVoucher;
 import com.zestfoot.backend.repository.UserVoucherRepository;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,12 +23,12 @@ public class VoucherController {
     }
 
     @PostMapping
-    public ResponseEntity<UserVoucher> create(@RequestBody UserVoucher voucher) {
+    public ResponseEntity<UserVoucher> create(@Valid @RequestBody UserVoucher voucher) {
         return ResponseEntity.status(HttpStatus.CREATED).body(voucherRepository.save(voucher));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserVoucher> update(@PathVariable Long id, @RequestBody UserVoucher voucher) {
+    public ResponseEntity<UserVoucher> update(@PathVariable Long id, @Valid @RequestBody UserVoucher voucher) {
         return voucherRepository.findById(id).map(existing -> {
             voucher.setId(existing.getId());
             return ResponseEntity.ok(voucherRepository.save(voucher));

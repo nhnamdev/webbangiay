@@ -1,6 +1,7 @@
 package com.zestfoot.backend.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import java.time.LocalDateTime;
 
@@ -16,6 +17,7 @@ public class UserVoucher {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
+    @NotBlank(message = "Mã voucher không được để trống")
     @Column(nullable = false)
     private String code;
 

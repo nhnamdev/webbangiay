@@ -1,6 +1,7 @@
 package com.zestfoot.backend.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Entity
@@ -12,6 +13,7 @@ public class Brand {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Tên thương hiệu không được để trống")
     @Column(nullable = false)
     private String name;
 

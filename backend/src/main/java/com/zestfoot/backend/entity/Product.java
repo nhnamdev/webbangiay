@@ -1,6 +1,7 @@
 package com.zestfoot.backend.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 
 @Entity
 @Table(name = "products")
@@ -10,8 +11,12 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Tên sản phẩm không được để trống")
     private String name;
+
+    @NotBlank(message = "Thương hiệu không được để trống")
     private String brand;
+
     private String category;
 
     @Column(name = "subCategory")
@@ -23,6 +28,7 @@ public class Product {
     private String gender;
     private String slug;
 
+    @PositiveOrZero(message = "Giá phải lớn hơn hoặc bằng 0")
     private Double price;
 
     @Column(name = "salePrice")

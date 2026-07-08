@@ -2,6 +2,7 @@ package com.zestfoot.backend.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 import java.time.LocalDateTime;
 
@@ -14,6 +15,8 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Email không được để trống")
+    @Email(message = "Email không đúng định dạng")
     @Column(unique = true, nullable = false)
     private String email;
 
@@ -21,6 +24,7 @@ public class User {
     @JsonIgnore
     private String passwordHash;
 
+    @Size(max = 100, message = "Tên không được vượt quá 100 ký tự")
     @Column(name = "full_name")
     private String fullName;
 
@@ -30,6 +34,7 @@ public class User {
     @Column(name = "last_name")
     private String lastName;
 
+    @Pattern(regexp = "(^0[0-9]{9}$)?", message = "Số điện thoại phải có 10 số, bắt đầu bằng 0")
     private String phone;
 
     @Column(columnDefinition = "TEXT")

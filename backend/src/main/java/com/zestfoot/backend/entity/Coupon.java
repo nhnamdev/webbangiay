@@ -1,6 +1,7 @@
 package com.zestfoot.backend.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 import java.time.LocalDateTime;
 
@@ -13,12 +14,15 @@ public class Coupon {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Mã giảm giá không được để trống")
     @Column(unique = true, nullable = false)
     private String code;
 
     @Column(name = "discount_type")
     private String discountType;
 
+    @NotNull(message = "Giá trị giảm không được để trống")
+    @Positive(message = "Giá trị giảm phải lớn hơn 0")
     @Column(name = "discount_value")
     private Double discountValue;
 
